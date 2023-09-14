@@ -38,6 +38,47 @@ class DataEditor:
 				'grid': {'row': 0, 'column': 0, 'rowspan': 6},
 				'sticky': {'sticky': 'NWES'}
 				},
+			'tree-dates': {
+				'type': Treeview,
+				'args': {'selectmode': 'browse', 'show': 'tree'},
+				'grid': {'row': 0, 'column': 1, 'columnspan': 5},
+				'sticky': {'sticky': 'NWES'}
+				},
+			'cal-dates-beg': {
+				'type': DateEntry,
+				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date-beg')},
+				'grid': {'row': 1, 'column': 1, 'columnspan': 2},
+				'tooltip': 'Data początku okresu'
+				},
+			'cal-dates-end': {
+				'type': DateEntry,
+				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date-end')},
+				'grid': {'row': 2, 'column': 1, 'columnspan': 2},
+				'tooltip': 'Data końca okresu'
+				},
+			'btn-dates-add': {
+				'type': Button,
+				'args': {'text': '\ud83d\udfa4', 'command': self.__add_date},
+				'grid': {'row': 1, 'column': 3},
+				'tooltip': 'Dodaj wskazane daty'
+				},
+			'btn-dates-del': {
+				'type': Button,
+				'args': {'text': '\u232b', 'command': self.__delete_date},
+				'grid': {'row': 1, 'column': 5},
+				'tooltip': 'Usuń daty'
+				},
+			'blank': {
+				'type': Label,
+				'args': {'text': '', 'background': 'white'},
+				'grid': {'row': 3, 'column': 4}
+				},
+			'entry-points': {
+				'type': Entry,
+				'args': {'textvariable': self.vars.get('var-name')},
+				'grid': {'row': 4, 'column': 1, 'columnspan': 5},
+				'sticky': {'sticky': 'NWES'}
+				},
 			'btn-points-add-project': {
 				'type': Button,
 				'args': {'text': '\ud83d\uddbf', 'command': self.__add_catalogue},
@@ -61,42 +102,6 @@ class DataEditor:
 				'args': {'text':'\u232b','command': self.__delete_item},
 				'grid': {'row': 5, 'column': 5},
 				'tooltip': 'Usuń element'
-				},
-			'entry-points': {
-				'type': Entry,
-				'args': {'textvariable': self.vars.get('var-name')},
-				'grid': {'row': 4, 'column': 1, 'columnspan': 5},
-				'sticky': {'sticky': 'NWES'}
-				},
-			'tree-dates': {
-				'type': Treeview,
-				'args': {'selectmode': 'browse', 'show': 'tree'},
-				'grid': {'row': 0, 'column': 1, 'columnspan': 5},
-				'sticky': {'sticky': 'NWES'}
-				},
-			'btn-dates-add': {
-				'type': Button,
-				'args': {'text': '\ud83d\udfa4', 'command': self.__add_date},
-				'grid': {'row': 1, 'column': 3},
-				'tooltip': 'Dodaj wskazane daty'
-				},
-			'btn-dates-del': {
-				'type': Button,
-				'args': {'text': '\u232b', 'command': self.__delete_date},
-				'grid': {'row': 1, 'column': 5},
-				'tooltip': 'Usuń daty'
-				},
-			'cal-dates-beg': {
-				'type': DateEntry,
-				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date-beg')},
-				'grid': {'row': 1, 'column': 1, 'columnspan': 2},
-				'tooltip': 'Data początku okresu'
-				},
-			'cal-dates-end': {
-				'type': DateEntry,
-				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date-end')},
-				'grid': {'row': 2, 'column': 1, 'columnspan': 2},
-				'tooltip': 'Data końca okresu'
 				},
 			'text-field': {
 				'type': Text,
@@ -122,11 +127,6 @@ class DataEditor:
 				'args': {'text': 'Zapisz', 'command': self.__save_file, 'state': 'disabled'},
 				'grid': {'row': 7, 'column': 4, 'columnspan': 2},
 				'tooltip': 'Zapisz zmainy w pliku'
-				},
-			'blank': {
-				'type': Label,
-				'args': {'text': '', 'background': 'white'},
-				'grid': {'row': 3, 'column': 4}
 				}
 			}
 		self.tooltips = []
