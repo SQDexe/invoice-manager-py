@@ -399,7 +399,7 @@ class TaxPrinter:
 
 			# write text #
 			txt += f'<b>{project}</b>\n'
-			txt += desc + ':\n'
+			txt += desc + '\n'
 
 			# get data for point, and write them #
 			for point, iid in [self.elem.get('tree-selected').item(iid, 'values')[1:3] for iid in items if self.elem.get('tree-selected').set(iid, 'project') == project]:
