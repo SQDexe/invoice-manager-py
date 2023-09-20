@@ -282,8 +282,11 @@ class TaxPrinter:
 		name.append(''.join(point.split('.')))
 		name.append('_'.join(self.vars.get('var-date').get().split('.')[1:3]))
 
+		# check for folders #
+		folder = split('[/\\\\]+', self.vars.get('var-filename').get())[:-1]
+
 		# set the filename #
-		self.vars.get('var-filename').set('_'.join(name))
+		self.vars.get('var-filename').set('/'.join([*folder, '_'.join(name)]))
 
 	@__sort
 	@__check
@@ -308,6 +311,7 @@ class TaxPrinter:
 		vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
 		self.elem.get('tree-selected').insert('', 'end', values=vals)
 
+	@__check
 	def __remove_by_btn(self, event):
 		iid = self.elem.get('tree-selected').focus()
 
