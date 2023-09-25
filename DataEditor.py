@@ -2,6 +2,7 @@ from os import getcwd, remove
 from os.path import isfile
 from json import loads, dumps
 from datetime import date
+from time import time
 
 from base64 import b64decode
 
@@ -132,8 +133,8 @@ class DataEditor:
 		self.tooltips = []
 
 		# window's settings #
-		width, height, file = self.vars.get('minWidth'), self.vars.get('minHeight'), self.__get_file('tmp.ico')
-		self.root.geometry('%sx%s+%s+%s' % (
+		width, height = self.vars.get('minWidth'), self.vars.get('minHeight')
+		self.root.geometry('{}x{}+{}+{}'.format(
 			width,
 			height,
 			int((self.root.winfo_screenwidth() - width) / 2),
@@ -143,10 +144,6 @@ class DataEditor:
 		self.root.minsize(width, height)
 		self.root.maxsize(self.vars.get('maxSize'), self.vars.get('maxSize'))
 		self.root.resizable(True, True)
-		with open(file, 'wb') as f:
-			f.write(b64decode('AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAlO//AP///wCUlP8ASv/qANvb2wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIDAAAAIiIiIgUAAAAgAAACBAAAACIiIiIEAAAAIAAAAgQAAAAiIiIiBAAAACAAAAIEAAAAIiIiIgQAAAAgAAACBAAAACIiJVUBAAAAIAAFUAAAAAAiIiUAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAOAXAADgFwAA4BcAAOAXAADgFwAA4BcAAOAXAADgFwAA4BcAAOAXAADgNwAA4H8AAP//AAD//wAA'))
-		self.root.iconbitmap(file)
-		remove(file)
 
 		# protocols #
 		self.root.protocol('WM_DELETE_WINDOW', self.__close)
@@ -154,6 +151,15 @@ class DataEditor:
 		# prepare elements #
 		self.__prep_elems()
 		self.__set_data()
+
+		# set icon #
+		file = self.__get_file('tmp.ico')
+		while isfile(file):
+			file = self.__get_file('{}.ico'.format(time()))
+		with open(file, 'wb') as f:
+			f.write(b64decode('AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAlO//AP///wCUlP8ASv/qANvb2wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIDAAAAIiIiIgUAAAAgAAACBAAAACIiIiIEAAAAIAAAAgQAAAAiIiIiBAAAACAAAAIEAAAAIiIiIgQAAAAgAAACBAAAACIiJVUBAAAAIAAFUAAAAAAiIiUAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAOAXAADgFwAA4BcAAOAXAADgFwAA4BcAAOAXAADgFwAA4BcAAOAXAADgNwAA4H8AAP//AAD//wAA'))
+		self.root.iconbitmap(file)
+		remove(file)
 
 		# start program #
 		self.root.mainloop()
@@ -244,7 +250,7 @@ class DataEditor:
 		for item in self.elem.get('tree-dates').get_children():
 			self.elem.get('tree-dates').delete(item)
 		for i in range(1, len(vals), 2):
-			self.elem.get('tree-dates').insert('', 'end', text=f'{vals[i]} - {vals[i + 1]}', values=[iid, vals[i], vals[i + 1]])
+			self.elem.get('tree-dates').insert('', 'end', text='{} - {}'.format(vals[i], vals[i + 1]), values=[iid, vals[i], vals[i + 1]])
 
 	def __text_change(self, event):
 		# check wherever iid correct #
@@ -422,7 +428,7 @@ class DataEditor:
 
 		# insert in right postion #
 		dates = tuple(map(self.__date2str, dates))
-		self.elem.get('tree-dates').insert('', index, text=f'{dates[0]} - {dates[1]}', values=[parentiid, dates[0], dates[1]])
+		self.elem.get('tree-dates').insert('', index, text='{} - {}'.format(*dates), values=[parentiid, dates[0], dates[1]])
 
 		# update values #
 		vals = [self.elem.get('tree-points').item(parentiid, 'values')[0]]
@@ -471,13 +477,13 @@ class DataEditor:
 
 	# other functions #
 	def __get_file(self, file=None):
-		return '%s\\%s' % (self.vars.get('workDir'), file if file else self.vars.get('workFile'))
+		return '{}\\{}'.format(self.vars.get('workDir'), file if file else self.vars.get('workFile'))
 
 	def __str2date(self, d):
 		return date(*reversed(list(map(int, d.split('.')))))
 
 	def __date2str(self, d):
-		return f'{d.day}.{d.month}.{d.year}'
+		return '{}.{}.{}'.format(d.day, d.month, d.year)
 
 	def __exint(self, n):
 		try:
