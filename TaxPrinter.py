@@ -2,6 +2,7 @@ from os import getcwd, remove
 from os.path import isfile
 from json import loads
 from datetime import date
+from time import time
 from re import findall, split, sub
 
 from base64 import b64decode
@@ -152,7 +153,7 @@ class TaxPrinter:
 
 		# window's settings #
 		width, height, file = self.vars.get('minWidth'), self.vars.get('minHeight'), '%s\\tmp.ico' % self.vars.get('workDir')
-		self.root.geometry('%sx%s+%s+%s' % (
+		self.root.geometry('{}x{}+{}+{}'.format(
 			width,
 			height,
 			int((self.root.winfo_screenwidth() - width) / 2),
@@ -162,14 +163,19 @@ class TaxPrinter:
 		self.root.minsize(width, height)
 		self.root.maxsize(self.vars.get('maxSize'), self.vars.get('maxSize'))
 		self.root.resizable(True, True)
-		with open(file, 'wb') as f:
-			f.write(b64decode('AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA////AHBwcACF/4sA8PDwAGv//wDb29sAj4+PAIWF/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEREREAAAAiRERERCIAAHdmZmZmdwAAdwAAAAB3AAB3d3d3d3cAAHg3d3d3VwAAd3d3d3d3AAAAEREREQAAAAAQAAABAAAAABEREREAAAAAEAAAAQAAAAARERZmAAAAABAABmAAAAAAEREWAAAAAAAAAAAAAAD//wAA8A8AAMADAADAAwAAwAMAAMADAADAAwAAwAMAAPAPAADwDwAA8A8AAPAPAADwDwAA8B8AAPA/AAD//wAA'))
-		self.root.iconbitmap(file)
-		remove(file)
 
 		# prepare elements #
 		self.__prep_elems()
 		self.__set_data()
+
+		# set icon #
+		file = self.__get_file('tmp.ico')
+		while isfile(file):
+			file = self.__get_file('{}.ico'.format(time()))
+		with open(file, 'wb') as f:
+			f.write(b64decode('AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA////AHBwcACF/4sA8PDwAGv//wDb29sAj4+PAIWF/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEREREAAAAiRERERCIAAHdmZmZmdwAAdwAAAAB3AAB3d3d3d3cAAHg3d3d3VwAAd3d3d3d3AAAAEREREQAAAAAQAAABAAAAABEREREAAAAAEAAAAQAAAAARERZmAAAAABAABmAAAAAAEREWAAAAAAAAAAAAAAD//wAA8A8AAMADAADAAwAAwAMAAMADAADAAwAAwAMAAPAPAADwDwAA8A8AAPAPAADwDwAA8B8AAPA/AAD//wAA'))
+		self.root.iconbitmap(file)
+		remove(file)
 
 		# start program #
 		self.root.mainloop()
@@ -262,7 +268,7 @@ class TaxPrinter:
 			self.__throw_error(e)
 
 	def __toggle(self, elem):
-		self.elem.get(f'entry-{elem}').config(state='normal' if self.vars.get(f'var-{elem}').get() else 'disabled')
+		self.elem.get('entry-{}'.format(elem)).config(state='normal' if self.vars.get('var-{}'.format(elem)).get() else 'disabled')
 
 	def __get_date(self, date, dates):
 		# check which timeframe is correct #
@@ -378,7 +384,7 @@ class TaxPrinter:
 		self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
 	def __print(self):
-		filename = '%s.docx' % self.vars.get('var-filename').get()
+		filename = '{}.docx'.format(self.vars.get('var-filename').get())
 
 		# check wherever file exists #
 		if isfile(self.__get_file(filename)):
@@ -402,7 +408,7 @@ class TaxPrinter:
 			desc = vals[0].replace('<d>', time)
 
 			# write text #
-			txt += f'<b>{project}</b>\n'
+			txt += '<b>{}</b>\n'.format(project)
 			txt += desc + '\n'
 
 			# get data for point, and write them #
@@ -431,7 +437,7 @@ class TaxPrinter:
 			style.font.size = Pt(10)
 
 			# regex for tags #
-			regex = '</?[%s]{1}>' % ''.join(self.vars.get('tags'))
+			regex = '</?[{}]>'.format(''.join(self.vars.get('tags')))
 
 			# regex matching #
 			tags = findall(regex, txt)
@@ -472,13 +478,13 @@ class TaxPrinter:
 
 	# other functions #
 	def __get_file(self, file=None):
-		return '%s\\%s' % (self.vars.get('workDir'), file if file else self.vars.get('workFile'))
+		return '{}\\{}'.format(self.vars.get('workDir'), file if file else self.vars.get('workFile'))
 
 	def __str2date(self, d):
 		return date(*reversed(list(map(int, d.split('.')))))
 
 	def __date2str(self, d):
-		return f'{d.day}.{d.month}.{d.year}'
+		return '{}.{}.{}'.format(d.day, d.month, d.year)
 
 	def __exint(self, n):
 		try:
