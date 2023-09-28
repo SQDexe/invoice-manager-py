@@ -229,6 +229,12 @@ class DataEditor:
 		except Exception as e:
 			self.__throw_error(e)
 
+	def __clear_data(self):
+		# clear data #
+		self.elem.get('tree-points').delete(*self.elem.get('tree-dates').get_children())
+		self.elem.get('tree-dates').delete(*self.elem.get('tree-dates').get_children())
+		self.elem.get('text-field').delete('1.0', 'end')
+		
 	def __points_select(self, event):
 		iid = self.elem.get('tree-points').focus()
 
@@ -292,8 +298,7 @@ class DataEditor:
 		self.elem.get('tree-points').delete(iid)
 
 		# clear view #
-		for item in self.elem.get('tree-dates').get_children():
-			self.elem.get('tree-dates').delete(item)
+		self.elem.get('tree-dates').delete(*self.elem.get('tree-dates').get_children())
 
 	@__safecheck
 	def __add_catalogue(self):
