@@ -244,6 +244,10 @@ class TaxPrinter:
 		self.elem.get('tree-selected').column('project', width=40, minwidth=40)
 		self.elem.get('tree-selected').column('point', width=40, minwidth=40)
 
+		# set opening text #
+		self.elem.get('text-opening').delete('1.0', 'end')
+		self.elem.get('text-opening').insert('1.0', self.vars.get('opening-text'))
+
 	def __set_data(self):
 		# check if file exists #
 		if not isfile(self.__get_file()):
@@ -261,11 +265,14 @@ class TaxPrinter:
 					for point in project.get('points'):
 						self.elem.get('tree-all').insert(i, 'end', text=point.get('point'), values=[point.get('text')])
 
-			self.elem.get('text-opening').delete('1.0', 'end')
-			self.elem.get('text-opening').insert('1.0', self.vars.get('opening-text'))
-
 		except Exception as e:
 			self.__throw_error(e)
+
+	@__check
+	def __clear_data(self):
+		# clear data #
+		self.elem.get('tree-all').delete(*self.elem.get('tree-all').get_children())
+		self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
 	def __toggle(self, elem):
 		self.elem.get('entry-{}'.format(elem)).config(state='normal' if self.vars.get('var-{}'.format(elem)).get() else 'disabled')
