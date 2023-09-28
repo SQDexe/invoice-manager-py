@@ -231,7 +231,7 @@ class DataEditor:
 
 	def __clear_data(self):
 		# clear data #
-		self.elem.get('tree-points').delete(*self.elem.get('tree-dates').get_children())
+		self.elem.get('tree-points').delete(*self.elem.get('tree-points').get_children())
 		self.elem.get('tree-dates').delete(*self.elem.get('tree-dates').get_children())
 		self.elem.get('text-field').delete('1.0', 'end')
 		
