@@ -6,8 +6,9 @@ from time import time
 
 from base64 import b64decode
 
-from tkinter import Tk, StringVar as StrVar, Frame, Text
+from tkinter import Tk, StringVar as StrVar, Menu, Frame, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
+from tkinter.filedialog import askopenfilename
 from tkinter.ttk import Entry, Button, Treeview, Label
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
@@ -465,7 +466,7 @@ class DataEditor:
 		try:
 			with open(self.__get_file(), 'wt', encoding='utf-8') as f:
 				f.write(dumps(file))
-			showinfo('Zapisywanie', message='Sukces')
+			showinfo(title='Zapisywanie', message='Sukces')
 			self.elem.get('btn-save').config(state='disabled')
 			self.vars.update({'unsaved': False})
 
@@ -474,10 +475,38 @@ class DataEditor:
 
 	def __close(self):
 		if self.vars.get('unsaved'):
-			if askokcancel('Niezapisane zmiany', message='Czy chcesz kontynuować?'):
+			if self.__ask_changes():
 				self.root.destroy()	
 		else:
 			self.root.destroy()
+
+	def __reload(self):
+		if self.__ask_changes():
+			self.__clear_data()
+			self.__set_data()
+			self.elem.get('btn-save').config(state='disabled')
+			self.vars.update({'unsaved': False})
+
+	def __ask_changes(self):
+		return askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
+	
+	def __throw_error(self, error):
+		match error:
+			case 0:
+				msg = 'Nie wybrano elementu'
+			case 1:
+				msg = 'Nie podano nazwy'
+			case 2:
+				msg = 'Nazwa zajęta'
+			case 3:
+				msg = 'Złe formatowanie tekstu'
+			case 4:
+				msg = 'Zły okres'
+			case 5:
+				msg = 'Okres zajęty'
+			case _:
+				msg = error
+		showerror(title='Błąd', message=msg)
 
 
 	# other functions #
@@ -499,24 +528,6 @@ class DataEditor:
 				num = roman.get(n[i], 0)
 				rest = rest - num if 3 * num < rest else rest + num
 			return rest
-
-	def __throw_error(self, error):
-		match error:
-			case 0:
-				msg = 'Nie wybrano elementu'
-			case 1:
-				msg = 'Nie podano nazwy'
-			case 2:
-				msg = 'Nazwa zajęta'
-			case 3:
-				msg = 'Złe formatowanie tekstu'
-			case 4:
-				msg = 'Zły okres'
-			case 5:
-				msg = 'Okres zajęty'
-			case _:
-				msg = error
-		showerror(title='Błąd', message=msg)
 
 if __name__ == '__main__':
 	DataEditor()
