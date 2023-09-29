@@ -9,8 +9,9 @@ from base64 import b64decode
 from docx import Document
 from docx.shared import Pt
 
-from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, Frame, Text
+from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, Menu, Frame, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
+from tkinter.filedialog import askopenfilename
 from tkinter.ttk import Style, Entry, Button, Treeview, Checkbutton, Label
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
@@ -395,7 +396,7 @@ class TaxPrinter:
 
 		# check wherever file exists #
 		if isfile(self.__get_file(filename)):
-			if not askokcancel('Plik już istnieje', message='Czy chcesz kontynuować?'):
+			if not askokcancel(title='Plik już istnieje', message='Czy chcesz kontynuować?'):
 				self.__throw_error(3)
 				return
 
@@ -477,10 +478,30 @@ class TaxPrinter:
 			# save file #
 			document.save(self.__get_file(filename))
 
-			showinfo('Zapisywanie', message='Sukces')
+			showinfo(title='Zapisywanie', message='Sukces')
 
 		except Exception as e:
 			self.__throw_error(e)
+
+	def __reload(self):
+		self.__clear_data()
+		self.__set_data()
+
+	def __throw_error(self, error):
+		match error:
+			case 0:
+				msg = 'Nic nie zostało wybrane'
+			case 1:
+				msg = 'Wybrany został projekt'
+			case 2:
+				msg = 'Punkt(y) już został wybrany'
+			case 3:
+				msg = 'Plik o tej nazwie już istnieje'
+			case 4:
+				msg = 'Data poza zasięgiem'
+			case _:
+				msg = error
+		showerror(title='Błąd', message=msg)
 
 
 	# other functions #
@@ -502,23 +523,6 @@ class TaxPrinter:
 				num = roman.get(n[i], 0)
 				rest = rest - num if 3 * num < rest else rest + num
 			return rest
-
-	def __throw_error(self, error):
-		match error:
-			case 0:
-				msg = 'Nic nie zostało wybrane'
-			case 1:
-				msg = 'Wybrany został projekt'
-			case 2:
-				msg = 'Punkt(y) już został wybrany'
-			case 3:
-				msg = 'Plik o tej nazwie już istnieje'
-			case 4:
-				msg = 'Data poza zasięgiem'
-			case _:
-				msg = error
-		showerror(title='Błąd', message=msg)
-
 
 # 'scroll-all': {
 # 	'type': Scrollbar,
