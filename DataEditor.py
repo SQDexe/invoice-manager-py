@@ -589,5 +589,6 @@ class DataEditor:
 				rest = rest - num if 3 * num < rest else rest + num
 			return rest
 
+
 if __name__ == '__main__':
 	DataEditor()
