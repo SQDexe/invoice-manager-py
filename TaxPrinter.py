@@ -12,7 +12,7 @@ from docx.shared import Pt
 from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, Menu, Frame, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename
-from tkinter.ttk import Style, Entry, Button, Treeview, Checkbutton, Label
+from tkinter.ttk import Style, Entry, Button, Treeview, Checkbutton
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
 
@@ -110,12 +110,6 @@ class TaxPrinter:
 				'grid': {'row': 7, 'column': 1},
 				'tooltip': 'Tekst notatki',
 				'sticky': {'sticky': 'NWES'}
-				},
-			'label-tip': {
-				'type': Label,
-				'args': {'text': '?', 'background': 'white'},
-				'grid': {'row': 5, 'column': 2},
-				'tooltip': 'Formatowanie opisów:\n<b> ... </b> - pogrubienie\n<i> ... </i> - kursywa\n<u> ... </u> - podkreślenie\n<s> ... </s> - przekreślenie\n<br> - nowa linia\n<p> - nazwa punktu\n<o> - treść punktu'
 				},
 			'btn-name': {
 				'type': Button,
@@ -227,6 +221,18 @@ class TaxPrinter:
 				self.elem.get(key).config(**border)
 			if text := data.get('tooltip'):
 				self.tooltips.append(ToolTip(self.elem.get(key), msg=text, delay=0.25))
+
+		# create menus #
+		self.elem.update({'menu-main': Menu(self.root, tearoff=0)})
+		self.elem.update({'menu-file': Menu(self.elem.get('menu-main'), tearoff=0)})
+		self.root.config(menu=self.elem.get('menu-main'))
+		self.elem.get('menu-main').add_cascade(label='Plik', menu=self.elem.get('menu-file'))
+		self.elem.get('menu-main').add_command(label='Formatowanie', command=self.__show_format)
+		self.elem.get('menu-main').add_command(label='Pomoc', command=self.__show_help)
+		self.elem.get('menu-file').add_command(label='Wybierz...', command=self.__select_file)
+		self.elem.get('menu-file').add_command(label='Przeładuj', command=self.__reload)
+		self.elem.get('menu-file').add_separator()
+		self.elem.get('menu-file').add_command(label='Wyjdź', command=self.root.destroy)
 
 		# grid settings #
 		cols, rows = self.elem.get(main).grid_size()
@@ -483,7 +489,54 @@ class TaxPrinter:
 		except Exception as e:
 			self.__throw_error(e)
 
+	def __show_format(self):
+		msg = \
+			'Formatowanie opisu:\n' \
+			'\n' \
+			'<b> ... </b> - pogrubienie\n' \
+			'<i> ... </i> - kursywa\n' \
+			'<u> ... </u> - podkreślenie\n' \
+			'<s> ... </s> - przekreślenie\n' \
+			'\n' \
+			'<p> - nazwa punktu (tylko w szablonie podpunktu)\n' \
+			'<o> - treść punktu (tylko w szablonie podpunktu)\n' \
+			'\n' \
+			'<br> - nowa linia'
+		showinfo(title='Formatowanie', message=msg)
+
+	def __show_help(self):
+		msg = \
+			'Program do drukowania opisów.\n' \
+			'\n' \
+			'Większość elemntów wyświetla opisy po najechaniu.\n' \
+			'Po kolumnach można poruszać się za pomocą strzałek.\n' \
+			'Dane podstawowo zapisane są w pliku "data.json",\n' \
+			'można je przeładować, bądź wybrać inny plik danych.\n' \
+			'\n' \
+			'Program napisany w Python, z pomocą TKinter.'
+		showinfo(title='Pomoc', message=msg)
+
+	def __select_file(self):
+		# get new path #
+		path = askopenfilename(title='Wybierz plik', initialdir=self.vars.get('workDir'), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
+		if not path:
+			return
+
+		# check if path correct #
+		if self.vars.get('workDir') not in path:
+			self.__throw_error(5)
+			return
+
+		# check if extension correct #
+		if '.json' not in path[-5:]:
+			self.__throw_error(6)
+			return
+
+		# set new file #
+		self.vars.update({'workFile': path.removeprefix(self.vars.get('workDir'))})
+
 	def __reload(self):
+		# reload data #
 		self.__clear_data()
 		self.__set_data()
 
@@ -499,6 +552,10 @@ class TaxPrinter:
 				msg = 'Plik o tej nazwie już istnieje'
 			case 4:
 				msg = 'Data poza zasięgiem'
+			case 5:
+				msg = 'Zła ścieżka pliku'
+			case 6:
+				msg = 'Złe rozszerzenie pliku'
 			case _:
 				msg = error
 		showerror(title='Błąd', message=msg)
@@ -524,17 +581,6 @@ class TaxPrinter:
 				rest = rest - num if 3 * num < rest else rest + num
 			return rest
 
-# 'scroll-all': {
-# 	'type': Scrollbar,
-# 	'args': {'orient': 'vertical'},
-# 	'grid': {'row': 0, 'column': 1, 'rowspan': 5},
-# 	'sticky': {'sticky': 'NWES'},
-# 	'nopad': 'xy'
-# 	},
-
-# self.elem.get(main).columnconfigure(1, weight=1, minsize=20)
-# self.elem.get('tree-all').configure(xscrollcommand=self.elem.get('scroll-all').set)
-# self.elem.get('scroll-all').configure(command=self.elem.get('tree-all').yview)
 
 if __name__ == '__main__':
 	TaxPrinter()
