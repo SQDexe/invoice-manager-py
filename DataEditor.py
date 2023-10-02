@@ -118,12 +118,6 @@ class DataEditor:
 				'grid': {'row': 7, 'column': 1},
 				'tooltip': 'Zapisz tekst'
 				},
-			'label-tip': {
-				'type': Label,
-				'args': {'text': '?', 'background': 'white'},
-				'grid': {'row': 7, 'column': 2},
-				'tooltip': 'Formatowanie opisu:\n<b> ... </b> - pogrubienie\n<i> ... </i> - kursywa\n<u> ... </u> - podkreślenie\n<s> ... </s> - przekreślenie\n<br> - nowa linia\n<d> - okres'
-				},
 			'btn-save': {
 				'type': Button,
 				'args': {'text': 'Zapisz', 'command': self.__save_file, 'state': 'disabled'},
@@ -195,6 +189,18 @@ class DataEditor:
 				self.elem.get(key).config(**border)
 			if (text := data.get('tooltip')):
 				self.tooltips.append(ToolTip(self.elem.get(key), msg=text, delay=0.25))
+
+		# create menus #
+		self.elem.update({'menu-main': Menu(self.root, tearoff=0)})
+		self.elem.update({'menu-file': Menu(self.elem.get('menu-main'), tearoff=0)})
+		self.root.config(menu=self.elem.get('menu-main'))
+		self.elem.get('menu-main').add_cascade(label='Plik', menu=self.elem.get('menu-file'))
+		self.elem.get('menu-main').add_command(label='Formatowanie', command=self.__show_format)
+		self.elem.get('menu-main').add_command(label='Pomoc', command=self.__show_help)
+		self.elem.get('menu-file').add_command(label='Wybierz...', command=self.__select_file)
+		self.elem.get('menu-file').add_command(label='Przeładuj', command=self.__reload)
+		self.elem.get('menu-file').add_separator()
+		self.elem.get('menu-file').add_command(label='Wyjdź', command=self.__close)
 
 		# grid settings #
 		cols, rows = self.elem.get(main).grid_size()
@@ -480,12 +486,62 @@ class DataEditor:
 		else:
 			self.root.destroy()
 
+	def __show_format(self):
+		msg = \
+			'Formatowanie opisu:\n' \
+			'\n' \
+			'<b> ... </b> - pogrubienie\n' \
+			'<i> ... </i> - kursywa\n' \
+			'<u> ... </u> - podkreślenie\n' \
+			'<s> ... </s> - przekreślenie\n' \
+			'\n' \
+			'<d> - okres (tylko w opisie projektu)\n' \
+			'\n' \
+			'<br> - nowa linia'
+		showinfo(title='Formatowanie', message=msg)
+
+	def __show_help(self):
+		msg = \
+			'Program do edytowania danych opisów.\n' \
+			'\n' \
+			'Większość elemntów wyświetla opisy po najechaniu.\n' \
+			'Po kolumnach można poruszać się za pomocą strzałek.\n' \
+			'Dane podstawowo zapisane są w pliku "data.json",\n' \
+			'można je przeładować, bądź wybrać inny plik danych.\n' \
+			'\n' \
+			'Program napisany w Python, z pomocą TKinter.'
+		showinfo(title='Pomoc', message=msg)
+
+	def __select_file(self):
+		# get new path #
+		path = askopenfilename(title='Wybierz plik', initialdir=self.vars.get('workDir'), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
+		if not path:
+			return
+
+		# check if path correct #
+		if self.vars.get('workDir') not in path:
+			self.__throw_error(6)
+			return
+
+		# check if extension correct #
+		if '.json' not in path[-5:]:
+			self.__throw_error(7)
+			return
+
+		# set new file #
+		self.vars.update({'workFile': path.removeprefix(self.vars.get('workDir'))})
+
 	def __reload(self):
-		if self.__ask_changes():
-			self.__clear_data()
-			self.__set_data()
-			self.elem.get('btn-save').config(state='disabled')
-			self.vars.update({'unsaved': False})
+		# check for changes #
+		if self.vars.get('unsaved'):
+			if not self.__ask_changes():
+				return
+
+		# reload data #
+		self.__clear_data()
+		self.__set_data()
+		self.elem.get('btn-save').config(state='disabled')
+		self.vars.update({'unsaved': False})
 
 	def __ask_changes(self):
 		return askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
@@ -504,6 +560,10 @@ class DataEditor:
 				msg = 'Zły okres'
 			case 5:
 				msg = 'Okres zajęty'
+			case 6:
+				msg = 'Zła ścieżka pliku'
+			case 7:
+				msg = 'Złe rozszerzenie pliku'
 			case _:
 				msg = error
 		showerror(title='Błąd', message=msg)
