@@ -504,10 +504,12 @@ class DataEditor:
 		msg = \
 			'Program do edytowania danych opisów.\n' \
 			'\n' \
-			'Większość elemntów wyświetla opisy po najechaniu.\n' \
-			'Po kolumnach można poruszać się za pomocą strzałek.\n' \
-			'Dane podstawowo zapisane są w pliku "data.json",\n' \
+			'\u2022 Większość elemntów wyświetla opisy po najechaniu.\n' \
+			'\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n' \
+			'\u2022 Dane podstawowo zapisane są w pliku "data.json",\n' \
 			'można je przeładować, bądź wybrać inny plik danych.\n' \
+			'\u2022 Aplikacja powinna znajdować się w tym samym, bądź\n' \
+			'wyższym folderze, co plik danych.\n' \
 			'\n' \
 			'Program napisany w Python, z pomocą TKinter.'
 		showinfo(title='Pomoc', message=msg)
