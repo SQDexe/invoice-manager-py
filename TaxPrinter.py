@@ -111,6 +111,12 @@ class TaxPrinter:
 				'tooltip': 'Tekst notatki',
 				'sticky': {'sticky': 'NWES'}
 				},
+			'cal-select': {
+				'type': DateEntry,
+				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date')},
+				'grid': {'row': 5, 'column': 3},
+				'tooltip': 'Data wystawienia opisu'
+				},
 			'btn-name': {
 				'type': Button,
 				'args': {'text': '\u270e', 'state': 'disabled', 'command': self.__make_name},
@@ -123,12 +129,6 @@ class TaxPrinter:
 				'grid': {'row': 6, 'column': 3, 'columnspan': 2},
 				'tooltip': 'Nazwa pliku',
 				'sticky': {'sticky': 'NWES'}
-				},
-			'cal-select': {
-				'type': DateEntry,
-				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date')},
-				'grid': {'row': 7, 'column': 3},
-				'tooltip': 'Data wystawienia opisu'
 				},
 			'btn-print': {
 				'type': Button,
@@ -288,7 +288,7 @@ class TaxPrinter:
 		# check which timeframe is correct #
 		date, *dates = list(map(self.__str2date, [date, *dates]))
 		if chosen := [[dates[i], dates[i + 1]] for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]]:
-			return ' - '.join(list(map(self.__date2str, *chosen)))
+			return ' - '.join(list(map(lambda x: '{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year), *chosen)))
 		else:
 			return None
 
