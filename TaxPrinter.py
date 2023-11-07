@@ -46,7 +46,7 @@ class TaxPrinter:
 				'type': Treeview,
 				'args': {'selectmode': 'extended', 'show': 'tree'},
 				'grid': {'row': 0, 'column': 0, 'rowspan': 5, 'columnspan': 2},
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'btn-add': {
 				'type': Button,
@@ -76,40 +76,40 @@ class TaxPrinter:
 				'type': Treeview,
 				'args': {'selectmode': 'extended', 'show': 'headings', 'columns': ('project', 'point')},
 				'grid': {'row': 0, 'column': 3, 'rowspan': 5, 'columnspan': 2},
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'entry-point': {
 				'type': Entry,
 				'args': {'textvariable': self.vars.get('var-point-text')},
 				'grid': {'row': 5, 'column': 0, 'columnspan': 2},
 				'tooltip': 'Tekst podpunktu',
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'chkbtn-cash': {
 				'type': Checkbutton,
 				'args': {'text': 'Dodaj pole kwoty', 'variable': self.vars.get('var-cash'), 'command': lambda: self.__toggle('cash')},
 				'grid': {'row': 6, 'column': 0},
-				'sticky': {'sticky': 'W'}
+				'sticky': 'W'
 				},
 			'entry-cash': {
 				'type': Entry,
 				'args': {'textvariable': self.vars.get('var-cash-text'), 'state': 'disabled'},
 				'grid': {'row': 6, 'column': 1},
 				'tooltip': 'Tekst kwoty',
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'chkbtn-addons': {
 				'type': Checkbutton,
 				'args': {'text': 'Dodaj myślniki', 'variable': self.vars.get('var-addons'), 'command': lambda: self.__toggle('addons')},
 				'grid': {'row': 7, 'column': 0},
-				'sticky': {'sticky': 'W'}
+				'sticky': 'W'
 				},
 			'entry-addons': {
 				'type': Entry,
 				'args': {'textvariable': self.vars.get('var-addons-text'), 'state': 'disabled'},
 				'grid': {'row': 7, 'column': 1},
 				'tooltip': 'Tekst notatki',
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'cal-select': {
 				'type': DateEntry,
@@ -128,7 +128,7 @@ class TaxPrinter:
 				'args': {'textvariable': self.vars.get('var-filename')},
 				'grid': {'row': 6, 'column': 3, 'columnspan': 2},
 				'tooltip': 'Nazwa pliku',
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'btn-print': {
 				'type': Button,
@@ -140,7 +140,7 @@ class TaxPrinter:
 				'type': Text,
 				'args': {},
 				'grid': {'row': 8, 'column': 0, 'columnspan': 5},
-				'sticky': {'sticky': 'NWES'},
+				'sticky': 'NWES',
 				'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
 				}
 			}
@@ -216,7 +216,7 @@ class TaxPrinter:
 				if 'y' in nopad:
 					self.elem.get(key).grid(pady=0)
 			if stick := data.get('sticky'):
-				self.elem.get(key).grid(**stick)
+				self.elem.get(key).grid(sticky=stick)
 			if border := data.get('borderfull'):
 				self.elem.get(key).config(**border)
 			if text := data.get('tooltip'):
