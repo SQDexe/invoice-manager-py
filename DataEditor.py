@@ -38,13 +38,13 @@ class DataEditor:
 				'type': Treeview,
 				'args': {'selectmode': 'browse', 'show': 'tree'},
 				'grid': {'row': 0, 'column': 0, 'rowspan': 6},
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'tree-dates': {
 				'type': Treeview,
 				'args': {'selectmode': 'browse', 'show': 'tree'},
 				'grid': {'row': 0, 'column': 1, 'columnspan': 5},
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'cal-dates-beg': {
 				'type': DateEntry,
@@ -79,7 +79,7 @@ class DataEditor:
 				'type': Entry,
 				'args': {'textvariable': self.vars.get('var-name')},
 				'grid': {'row': 4, 'column': 1, 'columnspan': 5},
-				'sticky': {'sticky': 'NWES'}
+				'sticky': 'NWES'
 				},
 			'btn-points-add-project': {
 				'type': Button,
@@ -109,7 +109,7 @@ class DataEditor:
 				'type': Text,
 				'args': {},
 				'grid': {'row': 6, 'column': 0, 'columnspan': 6},
-				'sticky': {'sticky': 'NWES'},
+				'sticky': 'NWES',
 				'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
 				},
 			'btn-text': {
@@ -184,7 +184,7 @@ class DataEditor:
 				if 'y' in nopad:
 					self.elem.get(key).grid(pady=0)
 			if stick := data.get('sticky'):
-				self.elem.get(key).grid(**stick)
+				self.elem.get(key).grid(sticky=stick)
 			if border := data.get('borderfull'):
 				self.elem.get(key).config(**border)
 			if (text := data.get('tooltip')):
