@@ -147,7 +147,7 @@ class TaxPrinter:
 		self.tooltips = []
 
 		# window's settings #
-		width, height, file = self.vars.get('minWidth'), self.vars.get('minHeight'), '%s\\tmp.ico' % self.vars.get('workDir')
+		width, height = self.vars.get('minWidth'), self.vars.get('minHeight')
 		self.root.geometry('{}x{}+{}+{}'.format(
 			width,
 			height,
