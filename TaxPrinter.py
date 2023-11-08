@@ -1,15 +1,15 @@
-from os import getcwd, remove
+from os import getcwd
 from os.path import isfile
 from json import loads
 from datetime import date
-from time import time
 from re import findall, split, sub
 
 from base64 import b64decode
+
 from docx import Document
 from docx.shared import Pt
 
-from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, Menu, Frame, Text
+from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, PhotoImage, Menu, Frame, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename
 from tkinter.ttk import Style, Entry, Button, Treeview, Checkbutton
@@ -27,6 +27,7 @@ class TaxPrinter:
 			'minWidth': 450,
 			'minHeight': 450,
 			'maxSize': 650,
+			'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAeUExURQAAAP///9vb2wAAAI+Pj/+FhYv/hf//a3BwcPDw8ChUvUYAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqL61tymUAAAA9SURBVAjXY2BAAEFBIQhD2NhIASaiBBUxNoSKCApiF3EBAyDDNQVIlyCLuBgDAZihBAQgRsdMIOhAMRACAAYpDjSL+1GnAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIzLTExLTA4VDE2OjQyOjQ2KzAwOjAwmi5JNwAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMy0xMS0wOFQxNjo0Mjo0NiswMDowMOtz8YsAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjMtMTEtMDhUMTY6NDI6NDcrMDA6MDAaEdvgAAAAAElFTkSuQmCC',
 			'workDir': getcwd(),
 			'workFile': 'data.json',
 			'pad': 5,
@@ -158,19 +159,11 @@ class TaxPrinter:
 		self.root.minsize(width, height)
 		self.root.maxsize(self.vars.get('maxSize'), self.vars.get('maxSize'))
 		self.root.resizable(True, True)
+		self.root.iconphoto(False, PhotoImage(data=b64decode(self.vars.get('icon'))))
 
 		# prepare elements #
 		self.__prep_elems()
 		self.__set_data()
-
-		# set icon #
-		file = self.__get_file('tmp.ico')
-		while isfile(file):
-			file = self.__get_file('{}.ico'.format(time()))
-		with open(file, 'wb') as f:
-			f.write(b64decode('AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA////AHBwcACF/4sA8PDwAGv//wDb29sAj4+PAIWF/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEREREAAAAiRERERCIAAHdmZmZmdwAAdwAAAAB3AAB3d3d3d3cAAHg3d3d3VwAAd3d3d3d3AAAAEREREQAAAAAQAAABAAAAABEREREAAAAAEAAAAQAAAAARERZmAAAAABAABmAAAAAAEREWAAAAAAAAAAAAAAD//wAA8A8AAMADAADAAwAAwAMAAMADAADAAwAAwAMAAPAPAADwDwAA8A8AAPAPAADwDwAA8B8AAPA/AAD//wAA'))
-		self.root.iconbitmap(file)
-		remove(file)
 
 		# start program #
 		self.root.mainloop()
