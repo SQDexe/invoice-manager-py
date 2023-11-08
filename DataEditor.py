@@ -1,12 +1,11 @@
-from os import getcwd, remove
+from os import getcwd
 from os.path import isfile
 from json import loads, dumps
 from datetime import date
-from time import time
 
 from base64 import b64decode
 
-from tkinter import Tk, StringVar as StrVar, Menu, Frame, Text
+from tkinter import Tk, StringVar as StrVar, PhotoImage, Menu, Frame, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename
 from tkinter.ttk import Entry, Button, Treeview, Label
@@ -24,6 +23,7 @@ class DataEditor:
 			'minWidth': 400,
 			'minHeight': 450,
 			'maxSize': 650,
+			'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAVUExURQAAAP///9vb2wAAAP/vlOr/Sv+UlPDI24oAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqAAa89zwAAAAtSURBVAjXY2DABIyCggoQhrGxEoMBRERJwQEiYiwQABERhDBIFlGAMRKw2A0ARWIITkVLLqYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMTEtMDhUMTY6NDE6NTkrMDA6MDBL+4JDAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTExLTA4VDE2OjQxOjU5KzAwOjAwOqY6/wAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyMy0xMS0wOFQxNjo0MjowMCswMDowMFv865QAAAAASUVORK5CYII=',
 			'workDir': getcwd(),
 			'workFile': 'data.json',
 			'pad': 5,
@@ -139,6 +139,7 @@ class DataEditor:
 		self.root.minsize(width, height)
 		self.root.maxsize(self.vars.get('maxSize'), self.vars.get('maxSize'))
 		self.root.resizable(True, True)
+		self.root.iconphoto(False, PhotoImage(data=b64decode(self.vars.get('icon'))))
 
 		# protocols #
 		self.root.protocol('WM_DELETE_WINDOW', self.__close)
@@ -146,15 +147,6 @@ class DataEditor:
 		# prepare elements #
 		self.__prep_elems()
 		self.__set_data()
-
-		# set icon #
-		file = self.__get_file('tmp.ico')
-		while isfile(file):
-			file = self.__get_file('{}.ico'.format(time()))
-		with open(file, 'wb') as f:
-			f.write(b64decode('AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAlO//AP///wCUlP8ASv/qANvb2wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIDAAAAIiIiIgUAAAAgAAACBAAAACIiIiIEAAAAIAAAAgQAAAAiIiIiBAAAACAAAAIEAAAAIiIiIgQAAAAgAAACBAAAACIiJVUBAAAAIAAFUAAAAAAiIiUAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAOAXAADgFwAA4BcAAOAXAADgFwAA4BcAAOAXAADgFwAA4BcAAOAXAADgNwAA4H8AAP//AAD//wAA'))
-		self.root.iconbitmap(file)
-		remove(file)
 
 		# start program #
 		self.root.mainloop()
@@ -177,14 +169,15 @@ class DataEditor:
 		# create, and configure elements #
 		for key, data in [(x, y) for x, y in self.elem.items() if x != main]:
 			self.elem.update({key: data.get('type')(self.elem.get(main), **data.get('args'))})
-			self.elem.get(key).grid(**data.get('grid'), padx=self.vars.get('pad'), pady=self.vars.get('pad'))
+			options = {'padx': self.vars.get('pad'), 'pady': self.vars.get('pad')}
 			if nopad := data.get('nopad'):
 				if 'x' in nopad:
-					self.elem.get(key).grid(padx=0)
+					options.update({'padx': 0})
 				if 'y' in nopad:
-					self.elem.get(key).grid(pady=0)
+					options.update({'pady': 0})
 			if stick := data.get('sticky'):
-				self.elem.get(key).grid(sticky=stick)
+				options.update({'sticky': stick})
+			self.elem.get(key).grid(**data.get('grid'), **options)
 			if border := data.get('borderfull'):
 				self.elem.get(key).config(**border)
 			if (text := data.get('tooltip')):
