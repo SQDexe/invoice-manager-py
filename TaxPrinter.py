@@ -209,14 +209,15 @@ class TaxPrinter:
 		# create, and configure elements #
 		for key, data in [(x, y) for x, y in self.elem.items() if x != main]:
 			self.elem.update({key: data.get('type')(self.elem.get(main), **data.get('args'))})
-			self.elem.get(key).grid(**data.get('grid'), padx=self.vars.get('pad'), pady=self.vars.get('pad'))
+			options = {'padx': self.vars.get('pad'), 'pady': self.vars.get('pad')}
 			if nopad := data.get('nopad'):
 				if 'x' in nopad:
-					self.elem.get(key).grid(padx=0)
+					options.update({'padx': 0})
 				if 'y' in nopad:
-					self.elem.get(key).grid(pady=0)
+					options.update({'pady': 0})
 			if stick := data.get('sticky'):
-				self.elem.get(key).grid(sticky=stick)
+				options.update({'sticky': stick})
+			self.elem.get(key).grid(**data.get('grid'), **options)
 			if border := data.get('borderfull'):
 				self.elem.get(key).config(**border)
 			if text := data.get('tooltip'):
