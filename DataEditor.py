@@ -180,7 +180,7 @@ class DataEditor:
 			self.elem.get(key).grid(**data.get('grid'), **options)
 			if border := data.get('borderfull'):
 				self.elem.get(key).config(**border)
-			if (text := data.get('tooltip')):
+			if text := data.get('tooltip'):
 				self.tooltips.append(ToolTip(self.elem.get(key), msg=text, delay=0.25))
 
 		# create menus #
