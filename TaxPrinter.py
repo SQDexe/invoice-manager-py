@@ -139,7 +139,6 @@ class TaxPrinter:
 				},
 			'text-opening': {
 				'type': Text,
-				'args': {},
 				'grid': {'row': 8, 'column': 0, 'columnspan': 5},
 				'sticky': 'NWES',
 				'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
@@ -201,7 +200,7 @@ class TaxPrinter:
 
 		# create, and configure elements #
 		for key, data in [(x, y) for x, y in self.elem.items() if x != main]:
-			self.elem.update({key: data.get('type')(self.elem.get(main), **data.get('args'))})
+			self.elem.update({key: data.get('type')(self.elem.get(main), **data.get('args', {}))})
 			options = {'padx': self.vars.get('pad'), 'pady': self.vars.get('pad')}
 			if nopad := data.get('nopad'):
 				if 'x' in nopad:
