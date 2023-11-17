@@ -11,7 +11,7 @@ from docx.shared import Pt
 
 from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, PhotoImage, Menu, Frame, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, askdirectory
 from tkinter.ttk import Style, Entry, Button, Treeview, Checkbutton
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
@@ -24,15 +24,15 @@ class TaxPrinter:
 		# declearing variables, and elements #
 		self.vars = {
 			'title': 'Tax Printer',
-			'minWidth': 450,
+			'minWidth': 400,
 			'minHeight': 450,
 			'maxSize': 650,
 			'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAeUExURQAAAP///9vb2wAAAI+Pj/+FhYv/hf//a3BwcPDw8ChUvUYAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqL61tymUAAAA9SURBVAjXY2BAAEFBIQhD2NhIASaiBBUxNoSKCApiF3EBAyDDNQVIlyCLuBgDAZihBAQgRsdMIOhAMRACAAYpDjSL+1GnAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIzLTExLTA4VDE2OjQyOjQ2KzAwOjAwmi5JNwAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMy0xMS0wOFQxNjo0Mjo0NiswMDowMOtz8YsAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjMtMTEtMDhUMTY6NDI6NDcrMDA6MDAaEdvgAAAAAElFTkSuQmCC',
-			'workDir': getcwd(),
-			'workFile': 'data.json',
+			'file': '{}\\{}'.format(getcwd(), 'data.json'),
 			'pad': 5,
 			'var-date': StrVar(),
 			'var-filename': StrVar(value='plik'),
+            'var-filepath': StrVar(value=getcwd()),
 			'var-point-text': StrVar(value='<b>Punkt <p></b> „<o>”'),
 			'var-cash': BoolVar(),
 			'var-addons': BoolVar(),
@@ -130,6 +130,13 @@ class TaxPrinter:
 				'grid': {'row': 6, 'column': 3, 'columnspan': 2},
 				'tooltip': 'Nazwa pliku',
 				'sticky': 'NWES'
+				},
+			'btn-filepath': {
+				'type': Button,
+				'args': {'text': '...', 'command': self.__set_path},
+				'grid': {'row': 7, 'column': 3},
+				'tooltip': 'Wybierz ścieżkę',
+                'sticky': 'W'
 				},
 			'btn-print': {
 				'type': Button,
@@ -250,12 +257,13 @@ class TaxPrinter:
 
 	def __set_data(self):
 		# check if file exists #
-		if not isfile(self.__get_file()):
+		if not isfile(self.vars.get('file')):
+            self.__throw_error(5)
 			return
 
 		# try to read data #
 		try:
-			with open(self.__get_file(), 'rt', encoding='utf-8') as f:
+			with open(self.vars.get('file'), 'rt', encoding='utf-8') as f:
 				data = loads(f.read())
 				for i, project in enumerate(data):
 					vals = [project.get('description')]
@@ -285,6 +293,12 @@ class TaxPrinter:
 		else:
 			return None
 
+    def __set_path(self):
+        # get path #
+        path = askdirectory(title='Wybierz folder', initialdir=self.vars.get('var-filepath').get())
+        if path:
+            self.vars.get('var-filepath').set(path)
+
 	def __make_name(self):
 		# get values #
 		iid, name = self.elem.get('tree-selected').get_children()[0], []
@@ -295,11 +309,8 @@ class TaxPrinter:
 		name.append(''.join(point.split('.')))
 		name.append('_'.join(self.vars.get('var-date').get().split('.')[1:3]))
 
-		# check for folders #
-		folder = split('[/\\\\]+', self.vars.get('var-filename').get())[:-1]
-
 		# set the filename #
-		self.vars.get('var-filename').set('/'.join([*folder, '_'.join(name)]))
+		self.vars.get('var-filename').set('_'.join(name))
 
 	@__sort
 	@__check
@@ -391,10 +402,17 @@ class TaxPrinter:
 		self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
 	def __print(self):
-		filename = '{}.docx'.format(self.vars.get('var-filename').get())
+        name = self.vars.get('var-filename').get()
+
+        # check if filename correct #
+        if any([True if char in name else False for char in '\\/:*?"<>|']):
+            self.__throw_error(7)
+            return
+
+		path = '{}\\{}.docx'.format(self.vars.get('var-filepath').get(), name)
 
 		# check wherever file exists #
-		if isfile(self.__get_file(filename)):
+		if isfile(path):
 			if not askokcancel(title='Plik już istnieje', message='Czy chcesz kontynuować?'):
 				self.__throw_error(3)
 				return
@@ -475,7 +493,7 @@ class TaxPrinter:
 						run.font.strike = False
 
 			# save file #
-			document.save(self.__get_file(filename))
+			document.save(path)
 
 			showinfo(title='Zapisywanie', message='Sukces')
 
@@ -505,21 +523,15 @@ class TaxPrinter:
 			'\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n' \
 			'\u2022 Dane podstawowo zapisane są w pliku "data.json",\n' \
 			'można je przeładować, bądź wybrać inny plik danych.\n' \
-			'\u2022 Aplikacja powinna znajdować się w tym samym, bądź\n' \
-			'wyższym folderze, co plik danych.\n' \
+			'\u2022 Aplikacja uruchamia się stosunkowo powoli.\n' \
 			'\n' \
 			'Program napisany w Python, z pomocą TKinter.'
 		showinfo(title='Pomoc', message=msg)
 
 	def __select_file(self):
 		# get new path #
-		path = askopenfilename(title='Wybierz plik', initialdir=self.vars.get('workDir'), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
+		path = askopenfilename(title='Wybierz plik', initialdir='\\'.join(self.vars.get('file').split('\\')[:-1]), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
 		if not path:
-			return
-
-		# check if path correct #
-		if self.vars.get('workDir') not in path:
-			self.__throw_error(5)
 			return
 
 		# check if extension correct #
@@ -528,7 +540,7 @@ class TaxPrinter:
 			return
 
 		# set new file #
-		self.vars.update({'workFile': path.removeprefix(self.vars.get('workDir'))})
+		self.vars.update({'file': path})
 
 	def __reload(self):
 		# reload data #
@@ -548,18 +560,17 @@ class TaxPrinter:
 			case 4:
 				msg = 'Data poza zasięgiem'
 			case 5:
-				msg = 'Zła ścieżka pliku'
+				msg = 'Brak podstawowego pliku danych'
 			case 6:
 				msg = 'Złe rozszerzenie pliku'
+            case 7:
+                msg = 'Niedozwolony znak w nazwie ( \\ / : * ? " < > | )'
 			case _:
 				msg = error
 		showerror(title='Błąd', message=msg)
 
 
 	# other functions #
-	def __get_file(self, file=None):
-		return '{}\\{}'.format(self.vars.get('workDir'), file if file else self.vars.get('workFile'))
-
 	def __str2date(self, d):
 		return date(*reversed(list(map(int, d.split('.')))))
 
