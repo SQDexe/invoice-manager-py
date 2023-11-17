@@ -24,8 +24,7 @@ class DataEditor:
 			'minHeight': 450,
 			'maxSize': 650,
 			'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAVUExURQAAAP///9vb2wAAAP/vlOr/Sv+UlPDI24oAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqAAa89zwAAAAtSURBVAjXY2DABIyCggoQhrGxEoMBRERJwQEiYiwQABERhDBIFlGAMRKw2A0ARWIITkVLLqYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMTEtMDhUMTY6NDE6NTkrMDA6MDBL+4JDAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTExLTA4VDE2OjQxOjU5KzAwOjAwOqY6/wAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyMy0xMS0wOFQxNjo0MjowMCswMDowMFv865QAAAAASUVORK5CYII=',
-			'workDir': getcwd(),
-			'workFile': 'data.json',
+			'file': '{}\\{}'.format(getcwd(), 'data.json'),
 			'pad': 5,
 			'unsaved': False,
 			'var-name': StrVar(),
@@ -209,13 +208,14 @@ class DataEditor:
 		self.elem.get('text-field').bind('<Key>', self.__text_change)
 
 	def __set_data(self):
-		# check if file exists #
-		if not isfile(self.__get_file()):
-			return
+        # check if file exists #
+        if not isfile(self.vars.get('file')):
+            self.__throw_error(6)
+            return
 
 		# try to read data #
 		try:
-			with open(self.__get_file(), 'rt', encoding='utf-8') as f:
+			with open(self.vars.get('file'), 'rt', encoding='utf-8') as f:
 				data = loads(f.read())
 				for i, project in enumerate(data):
 					vals = [project.get('description')]
@@ -462,7 +462,7 @@ class DataEditor:
 
 		# try to save file #
 		try:
-			with open(self.__get_file(), 'wt', encoding='utf-8') as f:
+			with open(self.vars.get('file'), 'wt', encoding='utf-8') as f:
 				f.write(dumps(file))
 			showinfo(title='Zapisywanie', message='Sukces')
 			self.elem.get('btn-save').config(state='disabled')
@@ -500,21 +500,15 @@ class DataEditor:
 			'\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n' \
 			'\u2022 Dane podstawowo zapisane są w pliku "data.json",\n' \
 			'można je przeładować, bądź wybrać inny plik danych.\n' \
-			'\u2022 Aplikacja powinna znajdować się w tym samym, bądź\n' \
-			'wyższym folderze, co plik danych.\n' \
+			'\u2022 Aplikacja uruchamia się stosunkowo powoli.\n' \
 			'\n' \
 			'Program napisany w Python, z pomocą TKinter.'
 		showinfo(title='Pomoc', message=msg)
 
 	def __select_file(self):
 		# get new path #
-		path = askopenfilename(title='Wybierz plik', initialdir=self.vars.get('workDir'), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
+		path = askopenfilename(title='Wybierz plik', initialdir='\\'.join(self.vars.get('file').split('\\')[:-1]), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
 		if not path:
-			return
-
-		# check if path correct #
-		if self.vars.get('workDir') not in path:
-			self.__throw_error(6)
 			return
 
 		# check if extension correct #
@@ -523,7 +517,7 @@ class DataEditor:
 			return
 
 		# set new file #
-		self.vars.update({'workFile': path.removeprefix(self.vars.get('workDir'))})
+		self.vars.update({'file': path})
 
 	def __reload(self):
 		# check for changes #
@@ -555,7 +549,7 @@ class DataEditor:
 			case 5:
 				msg = 'Okres zajęty'
 			case 6:
-				msg = 'Zła ścieżka pliku'
+				msg = 'Brak podstawowego pliku danych'
 			case 7:
 				msg = 'Złe rozszerzenie pliku'
 			case _:
@@ -564,9 +558,6 @@ class DataEditor:
 
 
 	# other functions #
-	def __get_file(self, file=None):
-		return '{}\\{}'.format(self.vars.get('workDir'), file if file else self.vars.get('workFile'))
-
 	def __str2date(self, d):
 		return date(*reversed(list(map(int, d.split('.')))))
 
