@@ -498,6 +498,8 @@ class DataEditor:
 			'\n' \
 			'\u2022 Większość elemntów wyświetla opisy po najechaniu.\n' \
 			'\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n' \
+			'\u2022 Elementy wybieramy na liście, a następnie klikamy\n' \
+			'w odpowiedni guzik w celu podjęcia akcji.\n' \
 			'\u2022 Dane podstawowo zapisane są w pliku "data.json",\n' \
 			'można je przeładować, bądź wybrać inny plik danych.\n' \
 			'\u2022 Aplikacja uruchamia się stosunkowo powoli.\n' \
