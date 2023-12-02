@@ -5,6 +5,7 @@ from datetime import date
 from re import findall, split, sub
 
 from base64 import b64decode
+from unidecode import unidecode
 
 from docx import Document
 from docx.shared import Pt
@@ -303,11 +304,11 @@ class TaxPrinter:
         self.elem.get('text-opening').delete('1.0', 'end')
         self.elem.get('text-opening').insert('1.0', self.vars.get('var-opening-text').get())
 
-    def __get_date(self, date, dates):
+    def __get_date(self, date, dates, raw=False):
         # check which timeframe is correct #
         date, *dates = list(map(self.__str2date, [date, *dates]))
         if chosen := [[dates[i], dates[i + 1]] for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]]:
-            return ' - '.join(list(map(lambda x: '{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year), *chosen)))
+            return ' - '.join(list(map(lambda x: '{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year), chosen[0]))) if not raw else chosen[0]
         else:
             return None
 
@@ -320,12 +321,18 @@ class TaxPrinter:
     def __make_name(self):
         # get values #
         iid, name = self.elem.get('tree-selected').get_children()[0], []
-        project, point = self.elem.get('tree-selected').item(iid, 'values')[0:2]
+        project, point, _, parent = self.elem.get('tree-selected').item(iid, 'values')
 
         # make new filename #
-        name.append(sub('\s+', '', project.lower()))
+        name.append(sub('[^a-z0-9]+', '', unidecode(project).lower()))
         name.append(''.join(point.split('.')))
-        name.append('_'.join(self.vars.get('var-date').get().split('.')[1:3]))
+        if time := self.__get_date(self.vars.get('var-date').get(), self.elem.get('tree-all').item(parent, 'values')[1:], True):
+            start, end = time
+            name.append(
+                '{}-{}_{:02d}'.format(start.month, end.month, start.year % 100) \
+                if start.year == end.year else \
+                '{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100)
+                )
 
         # set the filename #
         self.vars.get('var-filename').set('_'.join(name))
