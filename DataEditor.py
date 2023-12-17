@@ -413,7 +413,7 @@ class DataEditor:
 		if self.elem.get('tree-dates').get_children():
 			# check if date not taken #
 			currentDates = [(iid, tuple(map(self.__str2date, (x, y)))) for iid, (x, y) in [(iid, self.elem.get('tree-dates').item(iid, 'values')[1:3]) for iid in self.elem.get('tree-dates').get_children()]]
-			if not all([True if dates[1] < start or end < dates[0] else False for _, (start, end) in currentDates]):
+			if not all(dates[1] < start or end < dates[0] for _, (start, end) in currentDates):
 				self.__throw_error(5)
 				return
 
@@ -453,12 +453,14 @@ class DataEditor:
 					'point': self.elem.get('tree-points').item(item, 'text'),
 					'text': self.elem.get('tree-points').item(item, 'values')[0]
 					})
+			points.sort(key=lambda x: list(map(self.__exint, x.get('point').split('.'))))
 			file.append({
 				'name': self.elem.get('tree-points').item(project, 'text'),
 				'description': vals[0],
 				'dates': dates,
-				'points': sorted(points, key=lambda x: list(map(self.__exint, x.get('point').split('.'))))
+				'points': points
 				})
+		file.sort(key=lambda x: x.get('name'))
 
 		# try to save file #
 		try:
