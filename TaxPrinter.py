@@ -41,7 +41,8 @@ class TaxPrinter:
             'var-addons-text': StrVar(value=' - <br>'),
             'var-opening-text': StrVar(),
             'style': Style(),
-            'tags': ('b', 'i', 'u', 's')
+            'tags': ('b', 'i', 'u', 's'),
+	    'badChars': '\\/:*?"<>|'
             }
         self.elem = {
             'tree-all': {
@@ -204,8 +205,7 @@ class TaxPrinter:
 
             # sort by point, then by project #
             vals = [(iid, self.elem.get('tree-selected').set(iid, 'point'), self.elem.get('tree-selected').set(iid, 'project')) for iid in self.elem.get('tree-selected').get_children()]
-            vals.sort(key=lambda x: list(map(self.__exint, x[1].split('.'))))
-            vals.sort(key=lambda x: x[2])
+            vals.sort(key=lambda x: (x[2], list(map(self.__exint, x[1].split('.')))))
             for i, (iid, *_) in enumerate(vals):
                 self.elem.get('tree-selected').move(iid, '', i)
 
@@ -314,8 +314,7 @@ class TaxPrinter:
 
     def __set_path(self):
         # get path #
-        path = askdirectory(title='Wybierz folder', initialdir=self.vars.get('var-filepath').get())
-        if path:
+        if path := askdirectory(title='Wybierz folder', initialdir=self.vars.get('var-filepath').get()):
             self.vars.get('var-filepath').set(path)
 
     def __make_name(self):
@@ -424,7 +423,7 @@ class TaxPrinter:
         name = self.vars.get('var-filename').get()
 
         # check if filename correct #
-        if any([True if char in name else False for char in '\\/:*?"<>|']):
+        if any(char in name for char in self.vars.get('badChars')):
             self.__throw_error(7)
             return
 
@@ -441,7 +440,7 @@ class TaxPrinter:
         if beg := self.elem.get('text-opening').get('1.0', 'end-1c'):
             txt = beg + '\n'
         items = self.elem.get('tree-selected').get_children()
-        for project, parent in sorted(list(set([self.elem.get('tree-selected').item(iid, 'values')[0::3] for iid in items])), key=lambda x: x[0]):
+        for project, parent in sorted({self.elem.get('tree-selected').item(iid, 'values')[0::3] for iid in items}, key=lambda x: x[0]):
 
             # perpare variables #
             vals = self.elem.get('tree-all').item(parent, 'values')
@@ -586,7 +585,7 @@ class TaxPrinter:
             case 6:
                 msg = 'Złe rozszerzenie pliku'
             case 7:
-                msg = 'Niedozwolony znak w nazwie ( \\ / : * ? " < > | )'
+                msg = 'Niedozwolony znak w nazwie ( {} )'.format(' '.join(self.vars.get('badChars')))
             case _:
                 msg = error
         showerror(title='Błąd', message=msg)
