@@ -329,11 +329,16 @@ class TaxPrinter:
         name.append(''.join(point.split('.')))
         if time := self.__get_date(self.vars.get('var-date').get(), self.elem.get('tree-all').item(parent, 'values')[1:], True):
             start, end = time
-            name.append(
-                '{}-{}_{:02d}'.format(start.month, end.month, start.year % 100) \
-                if start.year == end.year else \
-                '{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100)
-                )
+	    datestamp = ''
+	    if start.year == end.year:
+		if start.month == end.month:
+		    datestamp = '{}-{}_{}_{:02d}'.format(start.day, end.day, start.month, start.year % 100)
+		else:
+		    datestamp = '{}-{}_{:02d}'.format(start.month, end.month, start.year % 100)
+	    else:
+	    	datestamp = '{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100)
+
+            name.append(datestamp)
 
         # set the filename #
         self.vars.get('var-filename').set('_'.join(name))
