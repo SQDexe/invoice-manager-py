@@ -158,8 +158,9 @@ class TaxPrinter:
                 'grid': {'row': 8, 'column': 4},
                 'tooltip': 'Drukuj opis'
                 },
-            'text-opening': {
+            'txt-opening': {
                 'type': Text,
+                'args': {'wrap': 'word'},
                 'grid': {'row': 9, 'column': 0, 'columnspan': 5},
                 'sticky': 'NWES',
                 'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
@@ -303,8 +304,8 @@ class TaxPrinter:
         self.elem.get('entry-{}'.format(elem)).config(state='normal' if self.vars.get('var-{}'.format(elem)).get() else 'disabled')
 
     def __set_text(self):
-        self.elem.get('text-opening').delete('1.0', 'end')
-        self.elem.get('text-opening').insert('1.0', self.vars.get('var-opening-text').get())
+        self.elem.get('txt-opening').delete('1.0', 'end')
+        self.elem.get('txt-opening').insert('1.0', self.vars.get('var-opening-text').get())
 
     def __get_date(self, date, dates, raw=False):
         # check which timeframe is correct #
@@ -444,7 +445,7 @@ class TaxPrinter:
 
         # get projects, and prepare text #
         txt = ''
-        if beg := self.elem.get('text-opening').get('1.0', 'end-1c'):
+        if beg := self.elem.get('txt-opening').get('1.0', 'end-1c'):
             txt = beg + '\n'
         items = self.elem.get('tree-selected').get_children()
         for project, parent in sorted({self.elem.get('tree-selected').item(iid, 'values')[0::3] for iid in items}, key=lambda x: x[0]):
