@@ -104,8 +104,9 @@ class DataEditor:
 				'grid': {'row': 5, 'column': 5},
 				'tooltip': 'Usuń element'
 				},
-			'text-field': {
+			'txt-field': {
 				'type': Text,
+                		'args': {'wrap': 'word'},
 				'grid': {'row': 6, 'column': 0, 'columnspan': 6},
 				'sticky': 'NWES',
 				'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
@@ -205,7 +206,7 @@ class DataEditor:
 		self.elem.get(main).rowconfigure(6, weight=3, minsize=100)
 		self.elem.get(main).columnconfigure(0, weight=3, minsize=150)
 		self.elem.get('tree-points').bind('<<TreeviewSelect>>', self.__points_select)
-		self.elem.get('text-field').bind('<Key>', self.__text_change)
+		self.elem.get('txt-field').bind('<Key>', self.__text_change)
 
 	def __set_data(self):
         # check if file exists #
@@ -232,7 +233,7 @@ class DataEditor:
 		# clear data #
 		self.elem.get('tree-points').delete(*self.elem.get('tree-points').get_children())
 		self.elem.get('tree-dates').delete(*self.elem.get('tree-dates').get_children())
-		self.elem.get('text-field').delete('1.0', 'end')
+		self.elem.get('txt-field').delete('1.0', 'end')
 		
 	def __points_select(self, event):
 		iid = self.elem.get('tree-points').focus()
@@ -241,10 +242,10 @@ class DataEditor:
 		if not iid:
 			return
 
-		# set text #
-		vals = self.elem.get('tree-points').item(iid, 'values')
-		self.elem.get('text-field').delete('1.0', 'end')
-		self.elem.get('text-field').insert('1.0', vals[0])
+		# set texts #
+		self.vars.get('var-name').set(self.elem.get('tree-points').item(iid, 'text'))
+		self.elem.get('txt-field').delete('1.0', 'end')
+		self.elem.get('txt-field').insert('1.0', self.elem.get('tree-points').item(iid, 'values')[0])
 
 		# get catalogue #
 		if not self.elem.get('tree-points').tag_has('catalogue', iid):
@@ -275,7 +276,7 @@ class DataEditor:
 			return
 
 		# assign text #
-		text = self.elem.get('text-field').get('1.0', 'end-1c')
+		text = self.elem.get('txt-field').get('1.0', 'end-1c')
 		vals = list(self.elem.get('tree-points').item(iid, 'values'))
 		vals[0] = text.strip()
 		self.elem.get('tree-points').item(iid, values=vals)
@@ -293,7 +294,7 @@ class DataEditor:
 			return
 
 		# delete item #
-		self.elem.get('text-field').delete('1.0', 'end')
+		self.elem.get('txt-field').delete('1.0', 'end')
 		self.elem.get('tree-points').delete(iid)
 
 		# clear view #
