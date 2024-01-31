@@ -5,10 +5,10 @@ from datetime import date
 
 from base64 import b64decode
 
-from tkinter import Tk, StringVar as StrVar, PhotoImage, Menu, Frame, Text
+from tkinter import Tk, StringVar as StrVar, PhotoImage, Menu, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename
-from tkinter.ttk import Entry, Button, Treeview, Label
+from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Label
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
 
@@ -30,6 +30,7 @@ class DataEditor:
 			'var-name': StrVar(),
 			'var-date-beg': StrVar(),
 			'var-date-end': StrVar(),
+			'style': Style(),
 			'tags': ('b', 'i', 'u', 's')
 			}
 		self.elem = {
@@ -162,7 +163,7 @@ class DataEditor:
 		main = 'main'
 
 		# mainframe #
-		self.elem.update({main: Frame(self.root, background = 'white')})
+		self.elem.update({main: Frame(self.root)})
 		self.elem.get(main).pack(fill = 'both', expand = True)
 
 		# create, and configure elements #
@@ -205,6 +206,7 @@ class DataEditor:
 		self.elem.get(main).rowconfigure(0, weight=3, minsize=100)
 		self.elem.get(main).rowconfigure(6, weight=3, minsize=100)
 		self.elem.get(main).columnconfigure(0, weight=3, minsize=150)
+		self.elem.get('style').configure('TFrame', background='white')
 		self.elem.get('tree-points').bind('<<TreeviewSelect>>', self.__points_select)
 		self.elem.get('txt-field').bind('<Key>', self.__text_change)
 
