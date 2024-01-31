@@ -10,10 +10,10 @@ from unidecode import unidecode
 from docx import Document
 from docx.shared import Pt
 
-from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, PhotoImage, Menu, Frame, Text
+from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, PhotoImage, Menu, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename, askdirectory
-from tkinter.ttk import Style, Entry, Button, Treeview, Checkbutton, Radiobutton
+from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Checkbutton, Radiobutton
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
 
@@ -216,7 +216,7 @@ class TaxPrinter:
         main = 'main'
 
         # mainframe #
-        self.elem.update({main: Frame(self.root, background = 'white')})
+        self.elem.update({main: Frame(self.root)})
         self.elem.get(main).pack(fill = 'both', expand = True)
 
         # create, and configure elements #
@@ -254,9 +254,10 @@ class TaxPrinter:
             self.elem.get(main).rowconfigure(i, weight=1, minsize=40)
         for i in range(cols):
             self.elem.get(main).columnconfigure(i, weight=1, minsize=50)
-        self.elem.get(main).columnconfigure(0, weight=1, minsize=130)
 
         # event binds, styles, and other settings #
+        self.elem.get(main).columnconfigure(0, weight=1, minsize=130)
+        self.vars.get('style').configure('TFrame', background='white')
         self.vars.get('style').configure('TCheckbutton', background='white')
         self.vars.get('style').configure('TRadiobutton', background='white')
         self.elem.get('tree-all').bind('<Return>', self.__add_by_btn)
