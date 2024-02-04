@@ -214,6 +214,19 @@ class TaxPrinter:
 
     def __prep_elems(self):
         main = 'main'
+	grid = {
+	    'col': {
+		0: {'minsize': 130}    
+	    	}
+	    }
+	binds = [
+	    ('tree-all', ('<Return>', self.__add_by_btn)),
+	    ('tree-all', ('<Right>', self.__add_by_btn)),
+	    ('tree-all', ('<Double-Button-1>', self.__add_by_btn)),
+	    ('tree-selected', ('<Return>', self.__remove_by_btn)),
+	    ('tree-selected', ('<Left>', self.__remove_by_btn)),
+	    ('tree-selected', ('<Double-Button-1>', self.__remove_by_btn))
+	    ]
 
         # mainframe #
         self.elem.update({main: Frame(self.root)})
@@ -251,27 +264,22 @@ class TaxPrinter:
         # grid settings #
         cols, rows = self.elem.get(main).grid_size()
         for i in range(rows):
-            self.elem.get(main).rowconfigure(i, weight=1, minsize=40)
+            self.elem.get(main).rowconfigure(i, **{'weight': 1, 'minsize': 40} | grid.get('row', {}).get(i, {}))
         for i in range(cols):
-            self.elem.get(main).columnconfigure(i, weight=1, minsize=50)
+            self.elem.get(main).columnconfigure(i, **{'weight': 1, 'minsize': 50} | grid.get('col', {}).get(i, {}))
 
-        # event binds, styles, and other settings #
-        self.elem.get(main).columnconfigure(0, weight=1, minsize=130)
+	# event binds #
+	for elem, (act, cmnd) in binds:
+	    self.elem.get(elem).bind(act, cmnd)
+	    
+        # styles, other settings, and actions #
         self.vars.get('style').configure('TFrame', background='white')
         self.vars.get('style').configure('TCheckbutton', background='white')
         self.vars.get('style').configure('TRadiobutton', background='white')
-        self.elem.get('tree-all').bind('<Return>', self.__add_by_btn)
-        self.elem.get('tree-all').bind('<Right>', self.__add_by_btn)
-        self.elem.get('tree-all').bind('<Double-Button-1>', self.__add_by_btn)
-        self.elem.get('tree-selected').bind('<Return>', self.__remove_by_btn)
-        self.elem.get('tree-selected').bind('<Left>', self.__remove_by_btn)
-        self.elem.get('tree-selected').bind('<Double-Button-1>', self.__remove_by_btn)
         self.elem.get('tree-selected').heading('project', text='Projekt')
         self.elem.get('tree-selected').heading('point', text='Punkt')
         self.elem.get('tree-selected').column('project', width=40, minwidth=40)
         self.elem.get('tree-selected').column('point', width=40, minwidth=40)
-
-        # invoke to set opening text #
         self.elem.get('radbtn-first').invoke()
 
     def __set_data(self):
