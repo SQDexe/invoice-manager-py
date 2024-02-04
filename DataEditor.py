@@ -161,6 +161,19 @@ class DataEditor:
 
 	def __prep_elems(self):
 		main = 'main'
+		grid = {
+		    'row': {
+			0: {'weight': 3, 'minsize': 100},
+			6: {'weight': 3, 'minsize': 100}
+		    	},
+		    'col': {
+			0: {'weight': 3, 'minsize': 150}    
+			}
+		    }
+		binds = [
+		    ('tree-points', ('<<TreeviewSelect>>', self.__points_select)),
+		    ('txt-field', ('<Key>', self.__text_change))
+		    ]
 
 		# mainframe #
 		self.elem.update({main: Frame(self.root)})
@@ -195,20 +208,19 @@ class DataEditor:
 		self.elem.get('menu-file').add_separator()
 		self.elem.get('menu-file').add_command(label='Wyjdź', command=self.__close)
 
-		# grid settings #
-		cols, rows = self.elem.get(main).grid_size()
-		for i in range(rows):
-			self.elem.get(main).rowconfigure(i, weight=1, minsize=40)
-		for i in range(cols):
-			self.elem.get(main).columnconfigure(i, weight=1, minsize=50)
+        	# grid settings #
+        	cols, rows = self.elem.get(main).grid_size()
+        	for i in range(rows):
+        	    self.elem.get(main).rowconfigure(i, **{'weight': 1, 'minsize': 40} | grid.get('row', {}).get(i, {}))
+        	for i in range(cols):
+            	    self.elem.get(main).columnconfigure(i, **{'weight': 1, 'minsize': 50} | grid.get('col', {}).get(i, {}))
 
-		# event binds, styles, and other settings #
-		self.elem.get(main).rowconfigure(0, weight=3, minsize=100)
-		self.elem.get(main).rowconfigure(6, weight=3, minsize=100)
-		self.elem.get(main).columnconfigure(0, weight=3, minsize=150)
+		# event binds #
+		for elem, (act, cmnd) in binds:
+	    	    self.elem.get(elem).bind(act, cmnd)
+	    
+        	# styles, other settings, and actions #
 		self.elem.get('style').configure('TFrame', background='white')
-		self.elem.get('tree-points').bind('<<TreeviewSelect>>', self.__points_select)
-		self.elem.get('txt-field').bind('<Key>', self.__text_change)
 
 	def __set_data(self):
         # check if file exists #
