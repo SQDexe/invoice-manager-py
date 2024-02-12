@@ -13,7 +13,7 @@ from docx.shared import Pt
 from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, PhotoImage, Menu, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename, askdirectory
-from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Checkbutton, Radiobutton
+from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Scrollbar, Checkbutton, Radiobutton
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
 
@@ -25,24 +25,28 @@ class TaxPrinter:
         # declearing variables, and elements #
         self.vars = {
             'title': 'Tax Printer',
-            'minWidth': 400,
-            'minHeight': 450,
-            'maxSize': 650,
             'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAeUExURQAAAP///9vb2wAAAI+Pj/+FhYv/hf//a3BwcPDw8ChUvUYAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqL61tymUAAAA9SURBVAjXY2BAAEFBIQhD2NhIASaiBBUxNoSKCApiF3EBAyDDNQVIlyCLuBgDAZihBAQgRsdMIOhAMRACAAYpDjSL+1GnAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIzLTExLTA4VDE2OjQyOjQ2KzAwOjAwmi5JNwAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMy0xMS0wOFQxNjo0Mjo0NiswMDowMOtz8YsAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjMtMTEtMDhUMTY6NDI6NDcrMDA6MDAaEdvgAAAAAElFTkSuQmCC',
+            'size': {
+                'min': (400, 450),
+                'max': (650, 650)
+                },
             'file': '{}\\{}'.format(getcwd(), 'data.json'),
             'pad': 5,
-            'var-date': StrVar(),
-            'var-filename': StrVar(value='plik'),
-                    'var-filepath': StrVar(value=getcwd()),
-            'var-point-text': StrVar(value='<b>Punkt <p></b> „<o>”'),
-            'var-cash': BoolVar(),
-            'var-addons': BoolVar(),
-            'var-cash-text': StrVar(value='Suma <b>............... ,-</b>, '),
-            'var-addons-text': StrVar(value=' - <br>'),
-            'var-opening-text': StrVar(),
+            'var': {
+                'date': StrVar(),
+                'filename': StrVar(value='plik'),
+                'filepath': StrVar(value=getcwd()),
+                'point-text': StrVar(value='<b>Punkt <p></b> „<o>”'),
+                'cash': BoolVar(),
+                'addons': BoolVar(),
+                'cash-text': StrVar(value='Suma <b>............... ,-</b>, '),
+                'addons-text': StrVar(value=' - <br>'),
+                'cash-mode': StrVar(),
+                'opening-text': StrVar()
+                },
             'style': Style(),
             'tags': ('b', 'i', 'u', 's'),
-	    'badChars': '\\/:*?"<>|'
+	        'badChars': '\\/:*?"<>|'
             }
         self.elem = {
             'tree-all': {
@@ -50,6 +54,12 @@ class TaxPrinter:
                 'args': {'selectmode': 'extended', 'show': 'tree'},
                 'grid': {'row': 0, 'column': 0, 'rowspan': 5, 'columnspan': 2},
                 'sticky': 'NWES'
+                },
+            'scroll-all': {
+                'type': Scrollbar,
+                'args': {'orient': 'vertical'},
+                'grid': {'row': 0, 'column': 1, 'rowspan': 5},
+                'sticky': 'NES'
                 },
             'btn-add': {
                 'type': Button,
@@ -81,95 +91,110 @@ class TaxPrinter:
                 'grid': {'row': 0, 'column': 3, 'rowspan': 5, 'columnspan': 2},
                 'sticky': 'NWES'
                 },
+            'txt-opening': {
+                'type': Text,
+                'args': {'wrap': 'word'},
+                'grid': {'row': 5, 'column': 0, 'columnspan': 5},
+                'sticky': 'NWES',
+                'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
+                },
+            'radbtn-facture': {
+                'type': Radiobutton,
+                'args': {'text': 'Faktura', 'variable': self.vars.get('var').get('opening-text'), 'command': self.__set_text, 'value': 'Akapit przykładowy 1.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'},
+                'grid': {'row': 6, 'column': 3},
+                'sticky': 'W'
+                },
+            'radbtn-contract': {
+                'type': Radiobutton,
+                'args': {'text': 'Umowa', 'variable': self.vars.get('var').get('opening-text'), 'command': self.__set_text, 'value': 'Akapit przykładowy 2.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'},
+                'grid': {'row': 6, 'column': 4},
+                'sticky': 'W'
+                },
             'entry-point': {
                 'type': Entry,
-                'args': {'textvariable': self.vars.get('var-point-text')},
-                'grid': {'row': 5, 'column': 0, 'columnspan': 2},
+                'args': {'textvariable': self.vars.get('var').get('point-text')},
+                'grid': {'row': 6, 'column': 0, 'columnspan': 2},
                 'tooltip': 'Tekst podpunktu',
                 'sticky': 'NWES'
                 },
             'chkbtn-cash': {
                 'type': Checkbutton,
-                'args': {'text': 'Dodaj pole kwoty', 'variable': self.vars.get('var-cash'), 'command': lambda: self.__toggle('cash')},
-                'grid': {'row': 6, 'column': 0},
+                'args': {'text': 'Dodaj pole kwoty', 'variable': self.vars.get('var').get('cash'), 'command': lambda: self.__toggle('cash')},
+                'grid': {'row': 7, 'column': 0},
                 'sticky': 'W'
                 },
             'entry-cash': {
                 'type': Entry,
-                'args': {'textvariable': self.vars.get('var-cash-text'), 'state': 'disabled'},
-                'grid': {'row': 6, 'column': 1},
+                'args': {'textvariable': self.vars.get('var').get('cash-text'), 'state': 'disabled'},
+                'grid': {'row': 7, 'column': 1},
                 'tooltip': 'Tekst kwoty',
                 'sticky': 'NWES'
                 },
+            'radbtn-auto': {
+                'type': Radiobutton,
+                'args': {'text': 'Auto', 'variable': self.vars.get('var').get('cash-mode'), 'value': 'auto'},
+                'grid': {'row': 8, 'column': 0},
+                'sticky': 'W'
+                },
+            'radbtn-all': {
+                'type': Radiobutton,
+                'args': {'text': 'Wszystko', 'variable': self.vars.get('var').get('cash-mode'), 'value': 'all'},
+                'grid': {'row': 8, 'column': 1},
+                'sticky': 'W'
+                },
             'chkbtn-addons': {
                 'type': Checkbutton,
-                'args': {'text': 'Dodaj myślniki', 'variable': self.vars.get('var-addons'), 'command': lambda: self.__toggle('addons')},
-                'grid': {'row': 7, 'column': 0},
+                'args': {'text': 'Dodaj myślniki', 'variable': self.vars.get('var').get('addons'), 'command': lambda: self.__toggle('addons')},
+                'grid': {'row': 9, 'column': 0},
                 'sticky': 'W'
                 },
             'entry-addons': {
                 'type': Entry,
-                'args': {'textvariable': self.vars.get('var-addons-text'), 'state': 'disabled'},
-                'grid': {'row': 7, 'column': 1},
+                'args': {'textvariable': self.vars.get('var').get('addons-text'), 'state': 'disabled'},
+                'grid': {'row': 9, 'column': 1},
                 'tooltip': 'Tekst notatki',
                 'sticky': 'NWES'
                 },
-            'radbtn-first': {
-                'type': Radiobutton,
-                'args': {'text': 'Faktura', 'variable': self.vars.get('var-opening-text'), 'command': self.__set_text, 'value': 'Akapit przykładowy 1.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'},
-                'grid': {'row': 8, 'column': 0},
-                'sticky': 'W'
-                },
-            'radbtn-second': {
-                'type': Radiobutton,
-                'args': {'text': 'Umowa', 'variable': self.vars.get('var-opening-text'), 'command': self.__set_text, 'value': 'Akapit przykładowy 2.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'},
-                'grid': {'row': 8, 'column': 1},
-                'sticky': 'W'
-                },
             'cal-select': {
                 'type': DateEntry,
-                'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date')},
-                'grid': {'row': 6, 'column': 3},
+                'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var').get('date')},
+                'grid': {'row': 7, 'column': 3},
                 'tooltip': 'Data wystawienia opisu'
                 },
             'btn-name': {
                 'type': Button,
                 'args': {'text': '\u270e', 'state': 'disabled', 'command': self.__make_name},
-                'grid': {'row': 6, 'column': 4},
+                'grid': {'row': 7, 'column': 4},
                 'tooltip': 'Wygeneruj nazwę do jednego podpunktu'
                 },
             'entry-filename': {
                 'type': Entry,
-                'args': {'textvariable': self.vars.get('var-filename')},
-                'grid': {'row': 7, 'column': 3, 'columnspan': 2},
+                'args': {'textvariable': self.vars.get('var').get('filename')},
+                'grid': {'row': 8, 'column': 3, 'columnspan': 2},
                 'tooltip': 'Nazwa pliku',
                 'sticky': 'NWES'
                 },
             'btn-filepath': {
                 'type': Button,
                 'args': {'text': '...', 'command': self.__set_path},
-                'grid': {'row': 8, 'column': 3},
+                'grid': {'row': 9, 'column': 3},
                 'tooltip': 'Wybierz ścieżkę docelową',
-                        'sticky': 'W'
+                'sticky': 'W'
                 },
             'btn-print': {
                 'type': Button,
                 'args': {'text': '\ud83d\uddb6', 'state': 'disabled', 'command': self.__print},
-                'grid': {'row': 8, 'column': 4},
+                'grid': {'row': 9, 'column': 4},
                 'tooltip': 'Drukuj opis'
-                },
-            'txt-opening': {
-                'type': Text,
-                'args': {'wrap': 'word'},
-                'grid': {'row': 9, 'column': 0, 'columnspan': 5},
-                'sticky': 'NWES',
-                'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
                 }
             }
         self.tooltips = []
 
         # window's settings #
-        width, height = self.vars.get('minWidth'), self.vars.get('minHeight')
+        width, height = self.vars.get('size').get('min')
+        self.root.minsize(width, height)
+        self.root.maxsize(*self.vars.get('size').get('max'))
+        self.root.resizable(True, True)
         self.root.geometry('{}x{}+{}+{}'.format(
             width,
             height,
@@ -177,9 +202,6 @@ class TaxPrinter:
             int((self.root.winfo_screenheight() - height) / 2)
             ))
         self.root.title(self.vars.get('title'))
-        self.root.minsize(width, height)
-        self.root.maxsize(self.vars.get('maxSize'), self.vars.get('maxSize'))
-        self.root.resizable(True, True)
         self.root.iconphoto(False, PhotoImage(data=b64decode(self.vars.get('icon'))))
 
         # prepare elements #
@@ -214,19 +236,41 @@ class TaxPrinter:
 
     def __prep_elems(self):
         main = 'main'
-	grid = {
-	    'col': {
-		0: {'minsize': 130}    
-	    	}
-	    }
-	binds = [
-	    ('tree-all', ('<Return>', self.__add_by_btn)),
-	    ('tree-all', ('<Right>', self.__add_by_btn)),
-	    ('tree-all', ('<Double-Button-1>', self.__add_by_btn)),
-	    ('tree-selected', ('<Return>', self.__remove_by_btn)),
-	    ('tree-selected', ('<Left>', self.__remove_by_btn)),
-	    ('tree-selected', ('<Double-Button-1>', self.__remove_by_btn))
-	    ]
+        grid = {
+            'row': {
+                'default': {'weight': 1, 'minsize': 40},
+                5: {'minsize': 80}    
+                },
+            'col': {
+                'default': {'weight': 1, 'minsize': 50}
+                }
+            }
+        menus = {
+            'menu-main': {
+                'main': True,
+                'elements': [
+                    ('menu', {'label': 'Plik', 'menu': 'menu-file'}),
+                    ('command', {'label': 'Formatowanie', 'command': self.__show_format}),
+                    ('command', {'label': 'Pomoc', 'command': self.__show_help})
+                    ]
+                },
+            'menu-file': {
+                'elements': [
+                    ('command', {'label': 'Wybierz...', 'command': self.__select_file}),
+                    ('command', {'label': 'Przeładuj', 'command': self.__reload}),
+                    ('separator', None),
+                    ('command', {'label': 'Wyjdź', 'command': self.root.destroy})
+                    ]
+                }
+            }
+        binds = [
+            ('tree-all', ('<Return>', self.__add_by_btn)),
+            ('tree-all', ('<Right>', self.__add_by_btn)),
+            ('tree-all', ('<Double-Button-1>', self.__add_by_btn)),
+            ('tree-selected', ('<Return>', self.__remove_by_btn)),
+            ('tree-selected', ('<Left>', self.__remove_by_btn)),
+            ('tree-selected', ('<Double-Button-1>', self.__remove_by_btn))
+            ]
 
         # mainframe #
         self.elem.update({main: Frame(self.root)})
@@ -249,29 +293,32 @@ class TaxPrinter:
             if text := data.get('tooltip'):
                 self.tooltips.append(ToolTip(self.elem.get(key), msg=text, delay=0.25))
 
-        # create menus #
-        self.elem.update({'menu-main': Menu(self.root, tearoff=0)})
-        self.elem.update({'menu-file': Menu(self.elem.get('menu-main'), tearoff=0)})
-        self.root.config(menu=self.elem.get('menu-main'))
-        self.elem.get('menu-main').add_cascade(label='Plik', menu=self.elem.get('menu-file'))
-        self.elem.get('menu-main').add_command(label='Formatowanie', command=self.__show_format)
-        self.elem.get('menu-main').add_command(label='Pomoc', command=self.__show_help)
-        self.elem.get('menu-file').add_command(label='Wybierz...', command=self.__select_file)
-        self.elem.get('menu-file').add_command(label='Przeładuj', command=self.__reload)
-        self.elem.get('menu-file').add_separator()
-        self.elem.get('menu-file').add_command(label='Wyjdź', command=self.root.destroy)
-
         # grid settings #
         cols, rows = self.elem.get(main).grid_size()
         for i in range(rows):
-            self.elem.get(main).rowconfigure(i, **{'weight': 1, 'minsize': 40} | grid.get('row', {}).get(i, {}))
+            self.elem.get(main).rowconfigure(i, **grid.get('row').get('default') | grid.get('row').get(i, {}))
         for i in range(cols):
-            self.elem.get(main).columnconfigure(i, **{'weight': 1, 'minsize': 50} | grid.get('col', {}).get(i, {}))
+            self.elem.get(main).columnconfigure(i, **grid.get('col').get('default') | grid.get('col').get(i, {}))
 
-	# event binds #
-	for elem, (act, cmnd) in binds:
-	    self.elem.get(elem).bind(act, cmnd)
-	    
+        # create menus #
+        for key, data in menus.items():
+            self.elem.update({key: Menu(self.root, tearoff=0)})
+            if data.get('main'):
+                self.root.config(menu=self.elem.get(key))
+        for key, data in menus.items():
+            for elem, args in data.get('elements'):
+                match elem:
+                    case 'menu':
+                        self.elem.get(key).add_cascade(**args | {'menu': self.elem.get(args.get('menu'))})
+                    case 'command':
+                        self.elem.get(key).add_command(**args)
+                    case 'separator' | _:
+                        self.elem.get(key).add_separator()
+
+        # event binds #
+        for elem, (act, cmnd) in binds:
+            self.elem.get(elem).bind(act, cmnd)
+            
         # styles, other settings, and actions #
         self.vars.get('style').configure('TFrame', background='white')
         self.vars.get('style').configure('TCheckbutton', background='white')
@@ -280,7 +327,11 @@ class TaxPrinter:
         self.elem.get('tree-selected').heading('point', text='Punkt')
         self.elem.get('tree-selected').column('project', width=40, minwidth=40)
         self.elem.get('tree-selected').column('point', width=40, minwidth=40)
-        self.elem.get('radbtn-first').invoke()
+        self.elem.get('tree-all').configure(yscrollcommand=self.elem.get('scroll-all').set)
+        self.elem.get('scroll-all').configure(command=self.elem.get('tree-all').yview)
+        self.elem.get('radbtn-facture').invoke()
+        self.elem.get('chkbtn-cash').invoke()
+        self.elem.get('radbtn-auto').invoke()
 
     def __set_data(self):
         # check if file exists #
@@ -310,24 +361,39 @@ class TaxPrinter:
         self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
     def __toggle(self, elem):
-        self.elem.get('entry-{}'.format(elem)).config(state='normal' if self.vars.get('var-{}'.format(elem)).get() else 'disabled')
+        match elem:
+            case 'cash':
+                state = self.vars.get('var').get('cash').get()
+                self.elem.get('entry-cash').config(state='normal' if state else 'disabled')
+                self.elem.get('radbtn-auto').config(state='normal' if state else 'disabled')
+                self.elem.get('radbtn-all').config(state='normal' if state else 'disabled')
+            case 'addons':
+                self.elem.get('entry-addons').config(state='normal' if self.vars.get('var').get('addons').get() else 'disabled')
+            case _:
+                self.__throw_error(8)
 
     def __set_text(self):
         self.elem.get('txt-opening').delete('1.0', 'end')
-        self.elem.get('txt-opening').insert('1.0', self.vars.get('var-opening-text').get())
+        self.elem.get('txt-opening').insert('1.0', self.vars.get('var').get('opening-text').get())
 
-    def __get_date(self, date, dates, raw=False):
+    def __get_date(self, date, dates, mode='raw'):
         # check which timeframe is correct #
         date, *dates = list(map(self.__str2date, [date, *dates]))
-        if chosen := [[dates[i], dates[i + 1]] for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]]:
-            return ' - '.join(list(map(lambda x: '{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year), chosen[0]))) if not raw else chosen[0]
+        if chosen := [(dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]]:
+            match mode:
+                case 'string':
+                    return ' - '.join(list(map(lambda x: '{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year), chosen[0])))
+                case 'int':
+                    return ((x.day, x.month, x.year) for x in chosen[0])
+                case 'raw' | _:
+                    return chosen[0]
         else:
             return None
 
     def __set_path(self):
         # get path #
-        if path := askdirectory(title='Wybierz folder', initialdir=self.vars.get('var-filepath').get()):
-            self.vars.get('var-filepath').set(path)
+        if path := askdirectory(title='Wybierz folder', initialdir=self.vars.get('var').get('filepath').get()):
+            self.vars.get('var').get('filepath').set(path)
 
     def __make_name(self):
         # get values #
@@ -337,21 +403,21 @@ class TaxPrinter:
         # make new filename #
         name.append(sub('[^a-z0-9]+', '', unidecode(project).lower()))
         name.append(''.join(point.split('.')))
-        if time := self.__get_date(self.vars.get('var-date').get(), self.elem.get('tree-all').item(parent, 'values')[1:], True):
+        if time := self.__get_date(self.vars.get('var').get('date').get(), self.elem.get('tree-all').item(parent, 'values')[1:]):
             start, end = time
-	    datestamp = ''
-	    if start.year == end.year:
-		if start.month == end.month:
-		    datestamp = '{}-{}_{}_{:02d}'.format(start.day, end.day, start.month, start.year % 100)
-		else:
-		    datestamp = '{}-{}_{:02d}'.format(start.month, end.month, start.year % 100)
-	    else:
-	    	datestamp = '{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100)
+            datestamp = ''
+            if start.year == end.year:
+                if start.month == end.month:
+                    datestamp = '{}-{}_{}_{:02d}'.format(start.day, end.day, start.month, start.year % 100)
+                else:
+                    datestamp = '{}-{}_{:02d}'.format(start.month, end.month, start.year % 100)
+            else:
+                datestamp = '{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100)
 
             name.append(datestamp)
 
         # set the filename #
-        self.vars.get('var-filename').set('_'.join(name))
+        self.vars.get('var').get('filename').set('_'.join(name))
 
     @__sort
     @__check
@@ -437,14 +503,14 @@ class TaxPrinter:
         self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
     def __print(self):
-        name = self.vars.get('var-filename').get()
+        name = self.vars.get('var').get('filename').get()
 
         # check if filename correct #
         if any(char in name for char in self.vars.get('badChars')):
             self.__throw_error(7)
             return
 
-        path = '{}\\{}.docx'.format(self.vars.get('var-filepath').get(), name)
+        path = '{}\\{}.docx'.format(self.vars.get('var').get('filepath').get(), name)
 
         # check wherever file exists #
         if isfile(path):
@@ -461,7 +527,7 @@ class TaxPrinter:
 
             # perpare variables #
             vals = self.elem.get('tree-all').item(parent, 'values')
-            time = self.__get_date(self.vars.get('var-date').get(), vals[1:])
+            time = self.__get_date(self.vars.get('var').get('date').get(), vals[1:], 'string')
             if not time:
                 self.__throw_error(4)
                 return
@@ -472,15 +538,17 @@ class TaxPrinter:
             txt += desc + '\n'
 
             # get data for point, and write them #
-            for point, iid in [self.elem.get('tree-selected').item(iid, 'values')[1:3] for iid in items if self.elem.get('tree-selected').set(iid, 'project') == project]:
-                if self.vars.get('var-cash').get():
-                    txt += self.vars.get('var-cash-text').get()
-                desc = self.vars.get('var-point-text').get()
+            collectedpoints = [self.elem.get('tree-selected').item(iid, 'values')[1:3] for iid in items if self.elem.get('tree-selected').set(iid, 'project') == project]
+            printcash = self.vars.get('var').get('cash').get() and ((self.vars.get('var').get('cash-mode').get() == 'auto' and 1 < len(collectedpoints)) or self.vars.get('var').get('cash-mode').get() == 'all')
+            for point, iid in collectedpoints:
+                if printcash:
+                    txt += self.vars.get('var').get('cash-text').get()
+                desc = self.vars.get('var').get('point-text').get()
                 desc = desc.replace('<p>', point)
                 desc = desc.replace('<o>', *self.elem.get('tree-all').item(iid, 'values'))
                 txt += desc
-                if self.vars.get('var-addons').get():
-                    txt += self.vars.get('var-addons-text').get()
+                if self.vars.get('var').get('addons').get():
+                    txt += self.vars.get('var').get('addons-text').get()
                 txt += '\n'
             txt = txt.replace('<br>', '\n')
             txt += '\n'
@@ -603,6 +671,8 @@ class TaxPrinter:
                 msg = 'Złe rozszerzenie pliku'
             case 7:
                 msg = 'Niedozwolony znak w nazwie ( {} )'.format(' '.join(self.vars.get('badChars')))
+            case 8:
+                msg = 'Funkcja na niedozwolonym elemencie'
             case _:
                 msg = error
         showerror(title='Błąd', message=msg)
