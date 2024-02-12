@@ -8,7 +8,7 @@ from base64 import b64decode
 from tkinter import Tk, StringVar as StrVar, PhotoImage, Menu, Text
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename
-from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Label
+from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Scrollbar, Label
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
 
@@ -20,16 +20,19 @@ class DataEditor:
 		# declearing variables, and elements #
 		self.vars = {
 			'title': 'Data Editor',
-			'minWidth': 400,
-			'minHeight': 450,
-			'maxSize': 650,
 			'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAVUExURQAAAP///9vb2wAAAP/vlOr/Sv+UlPDI24oAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqAAa89zwAAAAtSURBVAjXY2DABIyCggoQhrGxEoMBRERJwQEiYiwQABERhDBIFlGAMRKw2A0ARWIITkVLLqYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMTEtMDhUMTY6NDE6NTkrMDA6MDBL+4JDAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTExLTA4VDE2OjQxOjU5KzAwOjAwOqY6/wAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyMy0xMS0wOFQxNjo0MjowMCswMDowMFv865QAAAAASUVORK5CYII=',
+            'size': {
+                'min': (400, 450),
+                'max': (650, 650)
+                },
 			'file': '{}\\{}'.format(getcwd(), 'data.json'),
 			'pad': 5,
 			'unsaved': False,
-			'var-name': StrVar(),
-			'var-date-beg': StrVar(),
-			'var-date-end': StrVar(),
+			'var': {
+				'name': StrVar(),
+				'date-beg': StrVar(),
+				'date-end': StrVar()
+				},
 			'style': Style(),
 			'tags': ('b', 'i', 'u', 's')
 			}
@@ -40,21 +43,33 @@ class DataEditor:
 				'grid': {'row': 0, 'column': 0, 'rowspan': 6},
 				'sticky': 'NWES'
 				},
+            'scroll-points': {
+                'type': Scrollbar,
+                'args': {'orient': 'vertical'},
+                'grid': {'row': 0, 'column': 0, 'rowspan': 6},
+                'sticky': 'NES'
+                },
 			'tree-dates': {
 				'type': Treeview,
 				'args': {'selectmode': 'browse', 'show': 'tree'},
 				'grid': {'row': 0, 'column': 1, 'columnspan': 5},
 				'sticky': 'NWES'
 				},
+            'scroll-dates': {
+                'type': Scrollbar,
+                'args': {'orient': 'vertical'},
+                'grid': {'row': 0, 'column': 5},
+                'sticky': 'NES'
+                },
 			'cal-dates-beg': {
 				'type': DateEntry,
-				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date-beg')},
+				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var').get('date-beg')},
 				'grid': {'row': 1, 'column': 1, 'columnspan': 2},
 				'tooltip': 'Data początku okresu'
 				},
 			'cal-dates-end': {
 				'type': DateEntry,
-				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var-date-end')},
+				'args': {'date_pattern': 'd.M.y', 'locale': 'pl_PL', 'textvariable': self.vars.get('var').get('date-end')},
 				'grid': {'row': 2, 'column': 1, 'columnspan': 2},
 				'tooltip': 'Data końca okresu'
 				},
@@ -77,7 +92,7 @@ class DataEditor:
 				},
 			'entry-points': {
 				'type': Entry,
-				'args': {'textvariable': self.vars.get('var-name')},
+				'args': {'textvariable': self.vars.get('var').get('name')},
 				'grid': {'row': 4, 'column': 1, 'columnspan': 5},
 				'sticky': 'NWES'
 				},
@@ -107,7 +122,7 @@ class DataEditor:
 				},
 			'txt-field': {
 				'type': Text,
-                		'args': {'wrap': 'word'},
+                'args': {'wrap': 'word'},
 				'grid': {'row': 6, 'column': 0, 'columnspan': 6},
 				'sticky': 'NWES',
 				'borderfull': {'highlightthickness': 1, 'highlightbackground': 'gray'}
@@ -127,8 +142,11 @@ class DataEditor:
 			}
 		self.tooltips = []
 
-		# window's settings #
-		width, height = self.vars.get('minWidth'), self.vars.get('minHeight')
+        # window's settings #
+		width, height = self.vars.get('size').get('min')
+		self.root.minsize(width, height)
+		self.root.maxsize(*self.vars.get('size').get('max'))
+		self.root.resizable(True, True)
 		self.root.geometry('{}x{}+{}+{}'.format(
 			width,
 			height,
@@ -136,9 +154,6 @@ class DataEditor:
 			int((self.root.winfo_screenheight() - height) / 2)
 			))
 		self.root.title(self.vars.get('title'))
-		self.root.minsize(width, height)
-		self.root.maxsize(self.vars.get('maxSize'), self.vars.get('maxSize'))
-		self.root.resizable(True, True)
 		self.root.iconphoto(False, PhotoImage(data=b64decode(self.vars.get('icon'))))
 
 		# protocols #
@@ -162,18 +177,38 @@ class DataEditor:
 	def __prep_elems(self):
 		main = 'main'
 		grid = {
-		    'row': {
-			0: {'weight': 3, 'minsize': 100},
-			6: {'weight': 3, 'minsize': 100}
-		    	},
-		    'col': {
-			0: {'weight': 3, 'minsize': 150}    
+			'row': {
+				'default': {'weight': 1, 'minsize': 40},
+				0: {'weight': 3, 'minsize': 100},
+				6: {'weight': 3, 'minsize': 100}
+				},
+			'col': {
+				'default': {'weight': 1, 'minsize': 50},
+				0: {'weight': 3, 'minsize': 150}    
+				}
 			}
-		    }
+		menus = {
+			'menu-main': {
+				'main': True,
+				'elements': [
+					('menu', {'label': 'Plik', 'menu': 'menu-file'}),
+					('command', {'label': 'Formatowanie', 'command': self.__show_format}),
+					('command', {'label': 'Pomoc', 'command': self.__show_help})
+					]
+				},
+			'menu-file': {
+				'elements': [
+					('command', {'label': 'Wybierz...', 'command': self.__select_file}),
+					('command', {'label': 'Przeładuj', 'command': self.__reload}),
+					('separator', None),
+					('command', {'label': 'Wyjdź', 'command': self.__close})
+					]
+				}
+			}
 		binds = [
-		    ('tree-points', ('<<TreeviewSelect>>', self.__points_select)),
-		    ('txt-field', ('<Key>', self.__text_change))
-		    ]
+			('tree-points', ('<<TreeviewSelect>>', self.__points_select)),
+			('txt-field', ('<Key>', self.__text_change))
+			]
 
 		# mainframe #
 		self.elem.update({main: Frame(self.root)})
@@ -196,7 +231,27 @@ class DataEditor:
 			if text := data.get('tooltip'):
 				self.tooltips.append(ToolTip(self.elem.get(key), msg=text, delay=0.25))
 
+		# grid settings #
+		cols, rows = self.elem.get(main).grid_size()
+		for i in range(rows):
+			self.elem.get(main).rowconfigure(i, **grid.get('row').get('default') | grid.get('row').get(i, {}))
+		for i in range(cols):
+			self.elem.get(main).columnconfigure(i, **grid.get('col').get('default') | grid.get('col').get(i, {}))
+
 		# create menus #
+		for key, data in menus.items():
+			self.elem.update({key: Menu(self.root, tearoff=0)})
+			if data.get('main'):
+				self.root.config(menu=self.elem.get(key))
+		for key, data in menus.items():
+			for elem, args in data.get('elements'):
+				match elem:
+					case 'menu':
+						self.elem.get(key).add_cascade(**args | {'menu': self.elem.get(args.get('menu'))})
+					case 'command':
+						self.elem.get(key).add_command(**args)
+					case 'separator' | _:
+						self.elem.get(key).add_separator()
 		self.elem.update({'menu-main': Menu(self.root, tearoff=0)})
 		self.elem.update({'menu-file': Menu(self.elem.get('menu-main'), tearoff=0)})
 		self.root.config(menu=self.elem.get('menu-main'))
@@ -208,25 +263,22 @@ class DataEditor:
 		self.elem.get('menu-file').add_separator()
 		self.elem.get('menu-file').add_command(label='Wyjdź', command=self.__close)
 
-        	# grid settings #
-        	cols, rows = self.elem.get(main).grid_size()
-        	for i in range(rows):
-        	    self.elem.get(main).rowconfigure(i, **{'weight': 1, 'minsize': 40} | grid.get('row', {}).get(i, {}))
-        	for i in range(cols):
-            	    self.elem.get(main).columnconfigure(i, **{'weight': 1, 'minsize': 50} | grid.get('col', {}).get(i, {}))
-
 		# event binds #
 		for elem, (act, cmnd) in binds:
-	    	    self.elem.get(elem).bind(act, cmnd)
-	    
-        	# styles, other settings, and actions #
+			self.elem.get(elem).bind(act, cmnd)
+
+		# styles, other settings, and actions #
 		self.elem.get('style').configure('TFrame', background='white')
+		self.elem.get('tree-points').configure(yscrollcommand=self.elem.get('scroll-points').set)
+		self.elem.get('tree-dates').configure(yscrollcommand=self.elem.get('scroll-dates').set)
+		self.elem.get('scroll-points').configure(command=self.elem.get('tree-points').yview)
+		self.elem.get('scroll-dates').configure(command=self.elem.get('tree-dates').yview)
 
 	def __set_data(self):
-        # check if file exists #
-        if not isfile(self.vars.get('file')):
-            self.__throw_error(6)
-            return
+		# check if file exists #
+		if not isfile(self.vars.get('file')):
+			self.__throw_error(6)
+			return
 
 		# try to read data #
 		try:
@@ -257,7 +309,7 @@ class DataEditor:
 			return
 
 		# set texts #
-		self.vars.get('var-name').set(self.elem.get('tree-points').item(iid, 'text'))
+		self.vars.get('var').get('name').set(self.elem.get('tree-points').item(iid, 'text'))
 		self.elem.get('txt-field').delete('1.0', 'end')
 		self.elem.get('txt-field').insert('1.0', self.elem.get('tree-points').item(iid, 'values')[0])
 
@@ -316,7 +368,7 @@ class DataEditor:
 
 	@__safecheck
 	def __add_catalogue(self):
-		name = self.vars.get('var-name').get()
+		name = self.vars.get('var').get('name').get()
 
 		# check if name was given #
 		if not name:
@@ -335,7 +387,7 @@ class DataEditor:
 
 	@__safecheck
 	def __add_item(self):
-		iid, name, index = self.elem.get('tree-points').focus(), self.vars.get('var-name').get(), 'end'
+		iid, name, index = self.elem.get('tree-points').focus(), self.vars.get('var').get('name').get(), 'end'
 
 		# check wherever element is focused #
 		if not iid:
@@ -363,7 +415,7 @@ class DataEditor:
 
 	@__safecheck
 	def __change_item(self):
-		iid, name = self.elem.get('tree-points').focus(), self.vars.get('var-name').get()
+		iid, name = self.elem.get('tree-points').focus(), self.vars.get('var').get('name').get()
 
 		# check wherever element is focused #
 		if not iid:
@@ -418,7 +470,7 @@ class DataEditor:
 			return
 
 		# check if range is correct #
-		dates = tuple(map(self.__str2date, [self.vars.get('var-date-beg').get(), self.vars.get('var-date-end').get()]))
+		dates = tuple(map(self.__str2date, [self.vars.get('var').get('date-beg').get(), self.vars.get('var').get('date-end').get()]))
 		if dates[1] <= dates[0]:
 			self.__throw_error(4)
 			return
@@ -552,7 +604,7 @@ class DataEditor:
 
 	def __ask_changes(self):
 		return askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
-	
+
 	def __throw_error(self, error):
 		match error:
 			case 0:
