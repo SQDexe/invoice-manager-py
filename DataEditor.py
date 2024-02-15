@@ -268,7 +268,7 @@ class DataEditor:
 			self.elem.get(elem).bind(act, cmnd)
 
 		# styles, other settings, and actions #
-		self.elem.get('style').configure('TFrame', background='white')
+		self.vars.get('style').configure('TFrame', background='white')
 		self.elem.get('tree-points').configure(yscrollcommand=self.elem.get('scroll-points').set)
 		self.elem.get('tree-dates').configure(yscrollcommand=self.elem.get('scroll-dates').set)
 		self.elem.get('scroll-points').configure(command=self.elem.get('tree-points').yview)
