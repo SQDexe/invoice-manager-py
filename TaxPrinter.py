@@ -1,31 +1,3 @@
-# def getNums(num):
-#     strNum = str(num)
-#     return tuple(map(int, [strNum[0:-1], strNum[-1:]])) if len(strNum) != 1 else (0, num)
-
-# def regList(limit):
-#     return list(range(0, limit + 1, 7))
-
-# def newList(limit):
-#     arr = []
-#     for i in range(limit + 1):
-#         first, last = getNums(i)
-#         if (first - last * 2) % 7 == 0:
-#             arr.append(i)
-#     return arr
-
-# lim = 1000
-# reg, new = regList(lim), newList(lim)
-
-# print(f'Regular list len: {len(reg)}')
-# print(f'    New list len: {len(new)}')
-
-# for regNum, newNum in zip(reg, new):
-#     correct = regNum == newNum
-#     print('> {} | {} : {}'.format(str(regNum).rjust(4), str(newNum).rjust(4), '\u2713' if correct else '\u166d'))
-
-test = '{:2d}'.format(123)
-print(test)
-
 from os import getcwd
 from os.path import isfile
 from json import loads
