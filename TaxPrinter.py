@@ -1,3 +1,31 @@
+# def getNums(num):
+#     strNum = str(num)
+#     return tuple(map(int, [strNum[0:-1], strNum[-1:]])) if len(strNum) != 1 else (0, num)
+
+# def regList(limit):
+#     return list(range(0, limit + 1, 7))
+
+# def newList(limit):
+#     arr = []
+#     for i in range(limit + 1):
+#         first, last = getNums(i)
+#         if (first - last * 2) % 7 == 0:
+#             arr.append(i)
+#     return arr
+
+# lim = 1000
+# reg, new = regList(lim), newList(lim)
+
+# print(f'Regular list len: {len(reg)}')
+# print(f'    New list len: {len(new)}')
+
+# for regNum, newNum in zip(reg, new):
+#     correct = regNum == newNum
+#     print('> {} | {} : {}'.format(str(regNum).rjust(4), str(newNum).rjust(4), '\u2713' if correct else '\u166d'))
+
+test = '{:2d}'.format(123)
+print(test)
+
 from os import getcwd
 from os.path import isfile
 from json import loads
@@ -42,7 +70,9 @@ class TaxPrinter:
                 'cash-text': StrVar(value='Suma <b>............... ,-</b>, '),
                 'addons-text': StrVar(value=' - <br>'),
                 'cash-mode': StrVar(),
-                'opening-text': StrVar()
+                'opening-mode': StrVar(),
+                'facture': StrVar(value='Akapit przykładowy 1.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'),
+                'contract': StrVar(value='Akapit przykładowy 2.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu')
                 },
             'style': Style(),
             'tags': ('b', 'i', 'u', 's'),
@@ -100,13 +130,13 @@ class TaxPrinter:
                 },
             'radbtn-facture': {
                 'type': Radiobutton,
-                'args': {'text': 'Faktura', 'variable': self.vars.get('var').get('opening-text'), 'command': self.__set_text, 'value': 'Akapit przykładowy 1.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'},
+                'args': {'text': 'Faktura', 'variable': self.vars.get('var').get('opening-mode'), 'command': self.__set_text, 'value': 'facture'},
                 'grid': {'row': 6, 'column': 3},
                 'sticky': 'W'
                 },
             'radbtn-contract': {
                 'type': Radiobutton,
-                'args': {'text': 'Umowa', 'variable': self.vars.get('var').get('opening-text'), 'command': self.__set_text, 'value': 'Akapit przykładowy 2.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'},
+                'args': {'text': 'Umowa', 'variable': self.vars.get('var').get('opening-mode'), 'command': self.__set_text, 'value': 'contract'},
                 'grid': {'row': 6, 'column': 4},
                 'sticky': 'W'
                 },
@@ -374,7 +404,7 @@ class TaxPrinter:
 
     def __set_text(self):
         self.elem.get('txt-opening').delete('1.0', 'end')
-        self.elem.get('txt-opening').insert('1.0', self.vars.get('var').get('opening-text').get())
+        self.elem.get('txt-opening').insert('1.0', self.vars.get('var').get(self.vars.get('var').get('opening-mode').get()).get())
 
     def __get_date(self, date, dates, mode='raw'):
         # check which timeframe is correct #
@@ -401,6 +431,8 @@ class TaxPrinter:
         project, point, _, parent = self.elem.get('tree-selected').item(iid, 'values')
 
         # make new filename #
+        if self.vars.get('var').get('opening-mode').get() == 'contract':
+            name.append('u')
         name.append(sub('[^a-z0-9]+', '', unidecode(project).lower()))
         name.append(''.join(point.split('.')))
         if time := self.__get_date(self.vars.get('var').get('date').get(), self.elem.get('tree-all').item(parent, 'values')[1:]):
