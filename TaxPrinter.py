@@ -362,15 +362,18 @@ class TaxPrinter:
         self.elem.get('tree-all').delete(*self.elem.get('tree-all').get_children())
         self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
+    def __get_state(self, state):
+        return 'normal' if state else 'disabled'
+
     def __toggle(self, elem):
         match elem:
             case 'cash':
-                state = self.vars.get('var').get('cash').get()
-                self.elem.get('entry-cash').config(state='normal' if state else 'disabled')
-                self.elem.get('radbtn-auto').config(state='normal' if state else 'disabled')
-                self.elem.get('radbtn-all').config(state='normal' if state else 'disabled')
+                state = self.__get_state(self.vars.get('var').get('cash').get())
+                self.elem.get('entry-cash').config(state=state)
+                self.elem.get('radbtn-auto').config(state=state)
+                self.elem.get('radbtn-all').config(state=state)
             case 'addons':
-                self.elem.get('entry-addons').config(state='normal' if self.vars.get('var').get('addons').get() else 'disabled')
+                self.elem.get('entry-addons').config(state=self.__get_state(self.vars.get('var').get('addons').get()))
             case _:
                 self.__throw_error(8)
 
