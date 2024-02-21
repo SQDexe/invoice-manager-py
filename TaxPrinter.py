@@ -1,5 +1,6 @@
 from os import getcwd
 from os.path import isfile
+from io import StringIO
 from json import loads
 from datetime import date
 from re import findall, split, sub
@@ -36,6 +37,7 @@ class TaxPrinter:
                 'date': StrVar(),
                 'filename': StrVar(value='plik'),
                 'filepath': StrVar(value=getcwd()),
+                'title-text': StrVar(value='<b><t></b>'),
                 'point-text': StrVar(value='<b>Punkt <p></b> „<o>”'),
                 'cash': BoolVar(),
                 'addons': BoolVar(),
@@ -43,12 +45,12 @@ class TaxPrinter:
                 'addons-text': StrVar(value=' - <br>'),
                 'cash-mode': StrVar(),
                 'opening-mode': StrVar(),
-                'facture': StrVar(value='Akapit przykładowy 1.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'),
-                'contract': StrVar(value='Akapit przykładowy 2.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu')
+                'facture-text': StrVar(value='Akapit przykładowy 1.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'),
+                'contract-text': StrVar(value='Akapit przykładowy 2.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu')
                 },
             'style': Style(),
             'tags': ('b', 'i', 'u', 's'),
-	        'badChars': '\\/:*?"<>|'
+	        'badChars': r'\/:*?"<>|'
             }
         self.elem = {
             'tree-all': {
@@ -230,7 +232,7 @@ class TaxPrinter:
 
             # sort by point, then by project #
             vals = [(iid, self.elem.get('tree-selected').set(iid, 'point'), self.elem.get('tree-selected').set(iid, 'project')) for iid in self.elem.get('tree-selected').get_children()]
-            vals.sort(key=lambda x: (x[2], list(map(self.__exint, x[1].split('.')))))
+            vals.sort(key=lambda x: (x[2], tuple(self.__exint(y) for y in x[1].split('.'))))
             for i, (iid, *_) in enumerate(vals):
                 self.elem.get('tree-selected').move(iid, '', i)
 
@@ -279,7 +281,7 @@ class TaxPrinter:
         self.elem.get(main).pack(fill = 'both', expand = True)
 
         # create, and configure elements #
-        for key, data in [(x, y) for x, y in self.elem.items() if x != main]:
+        for key, data in ((x, y) for x, y in self.elem.items() if x != main):
             self.elem.update({key: data.get('type')(self.elem.get(main), **data.get('args', {}))})
             options = {'padx': self.vars.get('pad'), 'pady': self.vars.get('pad')}
             if nopad := data.get('nopad'):
@@ -379,17 +381,17 @@ class TaxPrinter:
 
     def __set_text(self):
         self.elem.get('txt-opening').delete('1.0', 'end')
-        self.elem.get('txt-opening').insert('1.0', self.vars.get('var').get(self.vars.get('var').get('opening-mode').get()).get())
+        self.elem.get('txt-opening').insert('1.0', self.vars.get('var').get('{}-text'.format(self.vars.get('var').get('opening-mode').get())).get())
 
     def __get_date(self, date, dates, mode='raw'):
         # check which timeframe is correct #
-        date, *dates = list(map(self.__str2date, [date, *dates]))
-        if chosen := [(dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]]:
+        date, *dates = tuple(self.__str2date(x) for x in (date, *dates))
+        if chosen := tuple((dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]):
             match mode:
                 case 'string':
-                    return ' - '.join(list(map(lambda x: '{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year), chosen[0])))
+                    return ' - '.join(tuple('{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year) for x in chosen[0]))
                 case 'int':
-                    return ((x.day, x.month, x.year) for x in chosen[0])
+                    return tuple((x.day, x.month, x.year) for x in chosen[0])
                 case 'raw' | _:
                     return chosen[0]
         else:
@@ -412,16 +414,13 @@ class TaxPrinter:
         name.append(''.join(point.split('.')))
         if time := self.__get_date(self.vars.get('var').get('date').get(), self.elem.get('tree-all').item(parent, 'values')[1:]):
             start, end = time
-            datestamp = ''
             if start.year == end.year:
                 if start.month == end.month:
-                    datestamp = '{}-{}_{}_{:02d}'.format(start.day, end.day, start.month, start.year % 100)
+                    name.append('{}-{}_{}_{:02d}'.format(start.day, end.day, start.month, start.year % 100))
                 else:
-                    datestamp = '{}-{}_{:02d}'.format(start.month, end.month, start.year % 100)
+                    name.append('{}-{}_{:02d}'.format(start.month, end.month, start.year % 100))
             else:
-                datestamp = '{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100)
-
-            name.append(datestamp)
+                name.append('{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100))
 
         # set the filename #
         self.vars.get('var').get('filename').set('_'.join(name))
@@ -440,7 +439,7 @@ class TaxPrinter:
             return
 
         # check wherever already not selected #
-        if iid in [self.elem.get('tree-selected').item(x, 'values')[2] for x in self.elem.get('tree-selected').get_children()]:
+        if iid in tuple(self.elem.get('tree-selected').item(x, 'values')[2] for x in self.elem.get('tree-selected').get_children()):
             return
 
         # add element to table #
@@ -463,7 +462,7 @@ class TaxPrinter:
     @__check
     def __add(self):
         # get all iids, and leave out folders #
-        iids = [(x, self.elem.get('tree-all').parent(x)) for x in self.elem.get('tree-all').selection() if not self.elem.get('tree-all').tag_has('catalogue', x)]
+        iids = tuple((x, self.elem.get('tree-all').parent(x)) for x in self.elem.get('tree-all').selection() if not self.elem.get('tree-all').tag_has('catalogue', x))
 
         # check wherever iids correct #
         if not iids:
@@ -471,7 +470,7 @@ class TaxPrinter:
             return
 
         # check wherever already not selected #
-        if any(x in [y for y, _ in iids] for x in [self.elem.get('tree-selected').item(x, 'values')[2] for x in self.elem.get('tree-selected').get_children()]):
+        if any(x in tuple(y for y, _ in iids) for x in tuple(self.elem.get('tree-selected').item(x, 'values')[2] for x in self.elem.get('tree-selected').get_children())):
             self.__throw_error(2)
             return
 
@@ -494,7 +493,7 @@ class TaxPrinter:
 
     @__check
     def __remove(self):
-        iids = [x for x in self.elem.get('tree-selected').selection()]
+        iids = tuple(x for x in self.elem.get('tree-selected').selection())
 
         # check wherever iids correct #
         if not iids:
@@ -527,40 +526,37 @@ class TaxPrinter:
 
         # get projects, and prepare text #
         txt = ''
-        if beg := self.elem.get('txt-opening').get('1.0', 'end-1c'):
-            txt = beg + '\n'
-        items = self.elem.get('tree-selected').get_children()
-        for project, parent in sorted({self.elem.get('tree-selected').item(iid, 'values')[0::3] for iid in items}, key=lambda x: x[0]):
+        with StringIO('', newline='') as txt_file:
+            if beg := self.elem.get('txt-opening').get('1.0', 'end-1c'):
+                txt_file.write(beg + '<br><br>')
 
-            # perpare variables #
-            vals = self.elem.get('tree-all').item(parent, 'values')
-            time = self.__get_date(self.vars.get('var').get('date').get(), vals[1:], 'string')
-            if not time:
-                self.__throw_error(4)
-                return
-            desc = vals[0].replace('<d>', time)
+            items = self.elem.get('tree-selected').get_children()
+            for project, parent in sorted({self.elem.get('tree-selected').item(iid, 'values')[0::3] for iid in items}, key=lambda x: x[0]):
 
-            # write text #
-            txt += '<b>{}</b>\n'.format(project)
-            txt += desc + '\n'
+                # perpare variables #
+                desc, *dates = self.elem.get('tree-all').item(parent, 'values')
+                time = self.__get_date(self.vars.get('var').get('date').get(), vals[1:], 'string')
+                if not time:
+                    self.__throw_error(4)
+                    return
 
-            # get data for point, and write them #
-            collectedpoints = [self.elem.get('tree-selected').item(iid, 'values')[1:3] for iid in items if self.elem.get('tree-selected').set(iid, 'project') == project]
-            printcash = self.vars.get('var').get('cash').get() and ((self.vars.get('var').get('cash-mode').get() == 'auto' and 1 < len(collectedpoints)) or self.vars.get('var').get('cash-mode').get() == 'all')
-            for point, iid in collectedpoints:
-                if printcash:
-                    txt += self.vars.get('var').get('cash-text').get()
-                desc = self.vars.get('var').get('point-text').get()
-                desc = desc.replace('<p>', point)
-                desc = desc.replace('<o>', *self.elem.get('tree-all').item(iid, 'values'))
-                txt += desc
-                if self.vars.get('var').get('addons').get():
-                    txt += self.vars.get('var').get('addons-text').get()
-                txt += '\n'
-            txt = txt.replace('<br>', '\n')
-            txt += '\n'
+                # write text #
+                txt_file.write(self.vars.get('var').get('title-text').get().replace('<t>', project) + '<br>')
+                txt_file.write(desc.replace('<d>', time) + '<br>')
 
-        txt = txt.strip()
+                # get data for point, and write them #
+                collected_points = tuple(self.elem.get('tree-selected').item(iid, 'values')[1:3] for iid in items if self.elem.get('tree-selected').set(iid, 'project') == project)
+                print_cash = (self.vars.get('var').get('cash-mode').get() == 'auto' and 1 < len(collected_points)) or self.vars.get('var').get('cash-mode').get() == 'all'
+                for point, iid in collected_points:
+                    if self.vars.get('var').get('cash').get() and print_cash:
+                        txt_file.write(self.vars.get('var').get('cash-text').get())
+                    txt_file.write(self.vars.get('var').get('point-text').get().replace('<p>', point).replace('<o>', *self.elem.get('tree-all').item(iid, 'values')))
+                    if self.vars.get('var').get('addons').get():
+                        txt_file.write(self.vars.get('var').get('addons-text').get())
+                    txt_file.write('<br>')
+                txt_file.write('<br>')
+
+            txt = txt_file.getvalue().replace('<br>', '\n').strip()
         
         try:
             # create file #
@@ -619,6 +615,7 @@ class TaxPrinter:
             '<u> ... </u> - podkreślenie\n' \
             '<s> ... </s> - przekreślenie\n' \
             '\n' \
+            '<t> - podpis projektu (niedostępny)\n' \
             '<p> - nazwa punktu (tylko w szablonie podpunktu)\n' \
             '<o> - treść punktu (tylko w szablonie podpunktu)\n' \
             '\n' \
@@ -687,7 +684,7 @@ class TaxPrinter:
 
     # other functions #
     def __str2date(self, d):
-        return date(*reversed(list(map(int, d.split('.')))))
+        return date(*reversed(tuple(int(x) for x in d.split('.'))))
 
     def __date2str(self, d):
         return '{}.{}.{}'.format(d.day, d.month, d.year)
@@ -695,7 +692,7 @@ class TaxPrinter:
     def __exint(self, n):
         try:
             return int(n)
-        except:
+        except Exception:
             roman, rest, n = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}, 0, n.upper()
             for i in range(len(n) - 1, -1, -1):
                 num = roman.get(n[i], 0)
