@@ -215,7 +215,7 @@ class DataEditor:
 		self.elem.get(main).pack(fill = 'both', expand = True)
 
 		# create, and configure elements #
-		for key, data in [(x, y) for x, y in self.elem.items() if x != main]:
+		for key, data in ((x, y) for x, y in self.elem.items() if x != main):
 			self.elem.update({key: data.get('type')(self.elem.get(main), **data.get('args', {}))})
 			options = {'padx': self.vars.get('pad'), 'pady': self.vars.get('pad')}
 			if nopad := data.get('nopad'):
@@ -376,7 +376,7 @@ class DataEditor:
 			return
 
 		# check if name not taken #
-		if name in [self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children()]:
+		if name in tuple(self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children()):
 			self.__throw_error(2)
 			return
 
@@ -404,7 +404,7 @@ class DataEditor:
 			index, iid = self.elem.get('tree-points').index(iid), self.elem.get('tree-points').parent(iid)
 
 		# check if name not taken #	
-		if name in [self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children(iid)]:
+		if name in tuple(self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children(iid)):
 			self.__throw_error(2)
 			return
 
@@ -431,7 +431,7 @@ class DataEditor:
 		parent = '' if self.elem.get('tree-points').tag_has('catalogue', iid) else self.elem.get('tree-points').parent(iid)
 
 		# check if name not taken #
-		if name in [self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children(parent)]:
+		if name in tuple(self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children(parent)):
 			self.__throw_error(2)
 			return
 
@@ -448,11 +448,11 @@ class DataEditor:
 			return
 
 		# update values #
-		parentiid = self.elem.get('tree-dates').item(iid, 'values')[0]
-		vals = [self.elem.get('tree-points').item(parentiid, 'values')[0]]
+		parent_iid = self.elem.get('tree-dates').item(iid, 'values')[0]
+		vals = [self.elem.get('tree-points').item(parent_iid, 'values')[0]]
 		for date in [self.elem.get('tree-dates').item(x, 'values')[1:3] for x in self.elem.get('tree-dates').get_children() if x != iid]: 
 			vals.extend(date)
-		self.elem.get('tree-points').item(parentiid, values=vals)
+		self.elem.get('tree-points').item(parent_iid, values=vals)
 
 		# delete item #
 		self.elem.get('tree-dates').delete(iid)
@@ -460,17 +460,17 @@ class DataEditor:
 	@__safecheck
 	def __add_date(self):
 		# get parent #
-		parentiid = self.elem.get('tree-points').focus()
-		if not self.elem.get('tree-points').tag_has('catalogue', parentiid):
-			parentiid = self.elem.get('tree-points').parent(parentiid)
+		parent_iid = self.elem.get('tree-points').focus()
+		if not self.elem.get('tree-points').tag_has('catalogue', parent_iid):
+			parent_iid = self.elem.get('tree-points').parent(parent_iid)
 
 		# check wherever element is focused #
-		if not parentiid:
+		if not parent_iid:
 			self.__throw_error(0)
 			return
 
 		# check if range is correct #
-		dates = tuple(map(self.__str2date, [self.vars.get('var').get('date-beg').get(), self.vars.get('var').get('date-end').get()]))
+		dates = tuple(self.__str2date(x) for x in (self.vars.get('var').get('date-beg').get(), self.vars.get('var').get('date-end').get()))
 		if dates[1] <= dates[0]:
 			self.__throw_error(4)
 			return
@@ -479,33 +479,33 @@ class DataEditor:
 		index = 'end'
 		if self.elem.get('tree-dates').get_children():
 			# check if date not taken #
-			currentDates = [(iid, tuple(map(self.__str2date, (x, y)))) for iid, (x, y) in [(iid, self.elem.get('tree-dates').item(iid, 'values')[1:3]) for iid in self.elem.get('tree-dates').get_children()]]
-			if not all(dates[1] < start or end < dates[0] for _, (start, end) in currentDates):
+			current_dates = tuple((iid, tuple(self.__str2date(z) for z in (x, y))) for iid, (x, y) in tuple((iid, self.elem.get('tree-dates').item(iid, 'values')[1:3]) for iid in self.elem.get('tree-dates').get_children()))
+			if not all(dates[1] < start or end < dates[0] for _, (start, end) in current_dates):
 				self.__throw_error(5)
 				return
 
 			# get right index #
-			ommit = [0, len(currentDates) - 1]
-			if dates[1] < currentDates[ommit[0]][1][0]:
+			ommit = [0, len(current_dates) - 1]
+			if dates[1] < current_dates[ommit[0]][1][0]:
 				index = 0
-			elif currentDates[ommit[1]][1][0] < dates[0]:
+			elif current_dates[ommit[1]][1][0] < dates[0]:
 				index = ommit[1] + 1
 			else:
-				for i, (iid, _) in enumerate(currentDates):
+				for i, (iid, _) in enumerate(current_dates):
 					if i in ommit:
 						continue
-					if currentDates[i - 1][1][1]  < dates[0] and dates[1] < currentDates[i][1][0]:
+					if current_dates[i - 1][1][1]  < dates[0] and dates[1] < current_dates[i][1][0]:
 						index = i
 
 		# insert in right postion #
-		dates = tuple(map(self.__date2str, dates))
-		self.elem.get('tree-dates').insert('', index, text='{} - {}'.format(*dates), values=[parentiid, dates[0], dates[1]])
+		dates = tuple(self.__date2str(x) for x in dates)
+		self.elem.get('tree-dates').insert('', index, text='{} - {}'.format(*dates), values=[parent_iid, dates[0], dates[1]])
 
 		# update values #
-		vals = [self.elem.get('tree-points').item(parentiid, 'values')[0]]
-		for date in [self.elem.get('tree-dates').item(x, 'values')[1:3] for x in self.elem.get('tree-dates').get_children()]: 
+		vals = [self.elem.get('tree-points').item(parent_iid, 'values')[0]]
+		for date in tuple(self.elem.get('tree-dates').item(x, 'values')[1:3] for x in self.elem.get('tree-dates').get_children()): 
 			vals.extend(date)
-		self.elem.get('tree-points').item(parentiid, values=vals)
+		self.elem.get('tree-points').item(parent_iid, values=vals)
 
 	def __save_file(self):
 		file = []
@@ -520,7 +520,7 @@ class DataEditor:
 					'point': self.elem.get('tree-points').item(item, 'text'),
 					'text': self.elem.get('tree-points').item(item, 'values')[0]
 					})
-			points.sort(key=lambda x: list(map(self.__exint, x.get('point').split('.'))))
+			points.sort(key=lambda x: tuple(self.__exint(y) for y in x.get('point').split('.')))
 			file.append({
 				'name': self.elem.get('tree-points').item(project, 'text'),
 				'description': vals[0],
@@ -630,7 +630,7 @@ class DataEditor:
 
 	# other functions #
 	def __str2date(self, d):
-		return date(*reversed(list(map(int, d.split('.')))))
+		return date(*reversed(tuple(int(x) for x in d.split('.'))))
 
 	def __date2str(self, d):
 		return '{}.{}.{}'.format(d.day, d.month, d.year)
@@ -638,7 +638,7 @@ class DataEditor:
 	def __exint(self, n):
 		try:
 			return int(n)
-		except:
+		except Exception:
 			roman, rest, n = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}, 0, n.upper()
 			for i in range(len(n) - 1, -1, -1):
 				num = roman.get(n[i], 0)
