@@ -5,6 +5,7 @@ from json import loads
 from datetime import date
 from re import findall, split, sub
 
+# from accessify import private 
 from base64 import b64decode
 from unidecode import unidecode
 
@@ -12,9 +13,9 @@ from docx import Document
 from docx.shared import Pt
 
 from tkinter import Tk, StringVar as StrVar, BooleanVar as BoolVar, PhotoImage, Menu, Text
+from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Scrollbar, Checkbutton, Radiobutton
 from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename, askdirectory
-from tkinter.ttk import Style, Frame, Entry, Button, Treeview, Scrollbar, Checkbutton, Radiobutton
 from tkcalendar import DateEntry
 from tktooltip import ToolTip
 
@@ -67,25 +68,25 @@ class TaxPrinter:
                 },
             'btn-add': {
                 'type': Button,
-                'args': {'text': '\u25b6', 'command': self.__add},
+                'args': {'text': '\u25b6', 'command': self.add},
                 'grid': {'row': 0, 'column': 2},
                 'tooltip': 'Dodaj element(y)'
                 },
             'btn-add-all': {
                 'type': Button,
-                'args': {'text': '\u25b6\u25b6', 'command': self.__add_all},
+                'args': {'text': '\u25b6\u25b6', 'command': self.add_all},
                 'grid': {'row': 1, 'column': 2},
                 'tooltip': 'Dodaj wszystkie elementy'
                 },
             'btn-remove': {
                 'type': Button,
-                'args': {'text': '\u25c0', 'command': self.__remove},
+                'args': {'text': '\u25c0', 'command': self.remove},
                 'grid': {'row': 3, 'column': 2},
                 'tooltip': 'Usuń element(y)'
                 },
             'btn-remove-all': {
                 'type': Button,
-                'args': {'text': '\u25c0\u25c0', 'command': self.__remove_all},
+                'args': {'text': '\u25c0\u25c0', 'command': self.remove_all},
                 'grid': {'row': 4, 'column': 2},
                 'tooltip': 'Usuń wszystkie elementy'
                 },
@@ -104,13 +105,13 @@ class TaxPrinter:
                 },
             'radbtn-facture': {
                 'type': Radiobutton,
-                'args': {'text': 'Faktura', 'variable': self.vars.get('var').get('opening-mode'), 'command': self.__set_text, 'value': 'facture'},
+                'args': {'text': 'Faktura', 'variable': self.vars.get('var').get('opening-mode'), 'command': self.set_text, 'value': 'facture'},
                 'grid': {'row': 6, 'column': 3},
                 'sticky': 'W'
                 },
             'radbtn-contract': {
                 'type': Radiobutton,
-                'args': {'text': 'Umowa', 'variable': self.vars.get('var').get('opening-mode'), 'command': self.__set_text, 'value': 'contract'},
+                'args': {'text': 'Umowa', 'variable': self.vars.get('var').get('opening-mode'), 'command': self.set_text, 'value': 'contract'},
                 'grid': {'row': 6, 'column': 4},
                 'sticky': 'W'
                 },
@@ -123,7 +124,7 @@ class TaxPrinter:
                 },
             'chkbtn-cash': {
                 'type': Checkbutton,
-                'args': {'text': 'Dodaj pole kwoty', 'variable': self.vars.get('var').get('cash'), 'command': lambda: self.__toggle('cash')},
+                'args': {'text': 'Dodaj pole kwoty', 'variable': self.vars.get('var').get('cash'), 'command': lambda: self.toggle('cash')},
                 'grid': {'row': 7, 'column': 0},
                 'sticky': 'W'
                 },
@@ -148,7 +149,7 @@ class TaxPrinter:
                 },
             'chkbtn-addons': {
                 'type': Checkbutton,
-                'args': {'text': 'Dodaj myślniki', 'variable': self.vars.get('var').get('addons'), 'command': lambda: self.__toggle('addons')},
+                'args': {'text': 'Dodaj myślniki', 'variable': self.vars.get('var').get('addons'), 'command': lambda: self.toggle('addons')},
                 'grid': {'row': 9, 'column': 0},
                 'sticky': 'W'
                 },
@@ -167,7 +168,7 @@ class TaxPrinter:
                 },
             'btn-name': {
                 'type': Button,
-                'args': {'text': '\u270e', 'state': 'disabled', 'command': self.__make_name},
+                'args': {'text': '\u270e', 'state': 'disabled', 'command': self.make_name},
                 'grid': {'row': 7, 'column': 4},
                 'tooltip': 'Wygeneruj nazwę do jednego podpunktu'
                 },
@@ -180,14 +181,14 @@ class TaxPrinter:
                 },
             'btn-filepath': {
                 'type': Button,
-                'args': {'text': '...', 'command': self.__set_path},
+                'args': {'text': '...', 'command': self.set_path},
                 'grid': {'row': 9, 'column': 3},
                 'tooltip': 'Wybierz ścieżkę docelową',
                 'sticky': 'W'
                 },
             'btn-print': {
                 'type': Button,
-                'args': {'text': '\ud83d\uddb6', 'state': 'disabled', 'command': self.__print},
+                'args': {'text': '\ud83d\uddb6', 'state': 'disabled', 'command': self.print},
                 'grid': {'row': 9, 'column': 4},
                 'tooltip': 'Drukuj opis'
                 }
@@ -209,36 +210,36 @@ class TaxPrinter:
         self.root.iconphoto(False, PhotoImage(data=b64decode(self.vars.get('icon'))))
 
         # prepare elements #
-        self.__prep_elems()
-        self.__set_data()
+        self.prep_elems()
+        self.set_data()
 
         # start program #
         self.root.mainloop()
 
     # decorators #
-    def __check(f):
+    def check(f):
         def wrapper(self, *args):
             f(self, *args)
 
             childs = self.elem.get('tree-selected').get_children()
-            self.elem.get('btn-print').config(state='normal' if childs else 'disabled')
-            self.elem.get('btn-name').config(state='normal' if len(childs) == 1 else 'disabled')
+            self.elem.get('btn-print').config(state=self.get_state(childs))
+            self.elem.get('btn-name').config(state=self.get_state(len(childs) == 1))
 
         return wrapper
 
-    def __sort(f):
+    def sort(f):
         def wrapper(self, *args):
             f(self, *args)
 
             # sort by point, then by project #
             vals = [(iid, self.elem.get('tree-selected').set(iid, 'point'), self.elem.get('tree-selected').set(iid, 'project')) for iid in self.elem.get('tree-selected').get_children()]
-            vals.sort(key=lambda x: (x[2], tuple(self.__exint(y) for y in x[1].split('.'))))
+            vals.sort(key=lambda x: (x[2], tuple(self.exint(y) for y in x[1].split('.'))))
             for i, (iid, *_) in enumerate(vals):
                 self.elem.get('tree-selected').move(iid, '', i)
 
         return wrapper
 
-    def __prep_elems(self):
+    def prep_elems(self):
         main = 'main'
         grid = {
             'row': {
@@ -254,26 +255,26 @@ class TaxPrinter:
                 'main': True,
                 'elements': [
                     ('menu', {'label': 'Plik', 'menu': 'menu-file'}),
-                    ('command', {'label': 'Formatowanie', 'command': self.__show_format}),
-                    ('command', {'label': 'Pomoc', 'command': self.__show_help})
+                    ('command', {'label': 'Formatowanie', 'command': self.show_format}),
+                    ('command', {'label': 'Pomoc', 'command': self.show_help})
                     ]
                 },
             'menu-file': {
                 'elements': [
-                    ('command', {'label': 'Wybierz...', 'command': self.__select_file}),
-                    ('command', {'label': 'Przeładuj', 'command': self.__reload}),
+                    ('command', {'label': 'Wybierz...', 'command': self.select_file}),
+                    ('command', {'label': 'Przeładuj', 'command': self.reload}),
                     ('separator', None),
                     ('command', {'label': 'Wyjdź', 'command': self.root.destroy})
                     ]
                 }
             }
         binds = [
-            ('tree-all', ('<Return>', self.__add_by_btn)),
-            ('tree-all', ('<Right>', self.__add_by_btn)),
-            ('tree-all', ('<Double-Button-1>', self.__add_by_btn)),
-            ('tree-selected', ('<Return>', self.__remove_by_btn)),
-            ('tree-selected', ('<Left>', self.__remove_by_btn)),
-            ('tree-selected', ('<Double-Button-1>', self.__remove_by_btn))
+            ('tree-all', ('<Return>', self.add_by_btn)),
+            ('tree-all', ('<Right>', self.add_by_btn)),
+            ('tree-all', ('<Double-Button-1>', self.add_by_btn)),
+            ('tree-selected', ('<Return>', self.remove_by_btn)),
+            ('tree-selected', ('<Left>', self.remove_by_btn)),
+            ('tree-selected', ('<Double-Button-1>', self.remove_by_btn))
             ]
 
         # mainframe #
@@ -337,10 +338,10 @@ class TaxPrinter:
         self.elem.get('chkbtn-cash').invoke()
         self.elem.get('radbtn-auto').invoke()
 
-    def __set_data(self):
+    def set_data(self):
         # check if file exists #
         if not isfile(self.vars.get('file')):
-            self.__throw_error(5)
+            self.throw_error(5)
             return
 
         # try to read data #
@@ -356,36 +357,33 @@ class TaxPrinter:
                         self.elem.get('tree-all').insert(i, 'end', text=point.get('point'), values=[point.get('text')])
 
         except Exception as e:
-            self.__throw_error(e)
+            self.throw_error(e)
 
-    @__check
-    def __clear_data(self):
+    @check
+    def clear_data(self):
         # clear data #
         self.elem.get('tree-all').delete(*self.elem.get('tree-all').get_children())
         self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
-    def __get_state(self, state):
-        return 'normal' if state else 'disabled'
-
-    def __toggle(self, elem):
+    def toggle(self, elem):
         match elem:
             case 'cash':
-                state = self.__get_state(self.vars.get('var').get('cash').get())
+                state = self.get_state(self.vars.get('var').get('cash').get())
                 self.elem.get('entry-cash').config(state=state)
                 self.elem.get('radbtn-auto').config(state=state)
                 self.elem.get('radbtn-all').config(state=state)
             case 'addons':
-                self.elem.get('entry-addons').config(state=self.__get_state(self.vars.get('var').get('addons').get()))
+                self.elem.get('entry-addons').config(state=self.get_state(self.vars.get('var').get('addons').get()))
             case _:
-                self.__throw_error(8)
+                self.throw_error(8)
 
-    def __set_text(self):
+    def set_text(self):
         self.elem.get('txt-opening').delete('1.0', 'end')
         self.elem.get('txt-opening').insert('1.0', self.vars.get('var').get('{}-text'.format(self.vars.get('var').get('opening-mode').get())).get())
 
-    def __get_date(self, date, dates, mode='raw'):
+    def get_date(self, date, dates, mode='raw'):
         # check which timeframe is correct #
-        date, *dates = tuple(self.__str2date(x) for x in (date, *dates))
+        date, *dates = tuple(self.str2date(x) for x in (date, *dates))
         if chosen := tuple((dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]):
             match mode:
                 case 'string':
@@ -397,12 +395,12 @@ class TaxPrinter:
         else:
             return None
 
-    def __set_path(self):
+    def set_path(self):
         # get path #
         if path := askdirectory(title='Wybierz folder', initialdir=self.vars.get('var').get('filepath').get()):
             self.vars.get('var').get('filepath').set(path)
 
-    def __make_name(self):
+    def make_name(self):
         # get values #
         iid, name = self.elem.get('tree-selected').get_children()[0], []
         project, point, _, parent = self.elem.get('tree-selected').item(iid, 'values')
@@ -412,7 +410,8 @@ class TaxPrinter:
             name.append('u')
         name.append(sub('[^a-z0-9]+', '', unidecode(project).lower()))
         name.append(''.join(point.split('.')))
-        if time := self.__get_date(self.vars.get('var').get('date').get(), self.elem.get('tree-all').item(parent, 'values')[1:]):
+
+        if time := self.get_date(self.vars.get('var').get('date').get(), self.elem.get('tree-all').item(parent, 'values')[1:]):
             start, end = time
             if start.year == end.year:
                 if start.month == end.month:
@@ -425,9 +424,9 @@ class TaxPrinter:
         # set the filename #
         self.vars.get('var').get('filename').set('_'.join(name))
 
-    @__sort
-    @__check
-    def __add_by_btn(self, event):
+    @sort
+    @check
+    def add_by_btn(self, event):
         iid = self.elem.get('tree-all').focus()
 
         # check wherever iid correct #
@@ -447,8 +446,8 @@ class TaxPrinter:
         vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
         self.elem.get('tree-selected').insert('', 'end', values=vals)
 
-    @__check
-    def __remove_by_btn(self, event):
+    @check
+    def remove_by_btn(self, event):
         iid = self.elem.get('tree-selected').focus()
 
         # check wherever iids correct #
@@ -458,20 +457,20 @@ class TaxPrinter:
         # remove selected elements #
         self.elem.get('tree-selected').delete(iid)
 
-    @__sort
-    @__check
-    def __add(self):
+    @sort
+    @check
+    def add(self):
         # get all iids, and leave out folders #
         iids = tuple((x, self.elem.get('tree-all').parent(x)) for x in self.elem.get('tree-all').selection() if not self.elem.get('tree-all').tag_has('catalogue', x))
 
         # check wherever iids correct #
         if not iids:
-            self.__throw_error(0)
+            self.throw_error(0)
             return
 
         # check wherever already not selected #
         if any(x in tuple(y for y, _ in iids) for x in tuple(self.elem.get('tree-selected').item(x, 'values')[2] for x in self.elem.get('tree-selected').get_children())):
-            self.__throw_error(2)
+            self.throw_error(2)
             return
 
         # add elements to table #
@@ -479,11 +478,11 @@ class TaxPrinter:
             vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
             self.elem.get('tree-selected').insert('', 'end', values=vals)
 
-    @__sort
-    @__check
-    def __add_all(self):
+    @sort
+    @check
+    def add_all(self):
         # clear table #
-        self.__remove_all()
+        self.remove_all()
 
         # refill table #
         for parent in self.elem.get('tree-all').get_children():
@@ -491,29 +490,29 @@ class TaxPrinter:
                 vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
                 self.elem.get('tree-selected').insert('', 'end', values=vals)
 
-    @__check
-    def __remove(self):
+    @check
+    def remove(self):
         iids = tuple(x for x in self.elem.get('tree-selected').selection())
 
         # check wherever iids correct #
         if not iids:
-            self.__throw_error(0)
+            self.throw_error(0)
             return
 
         # remove selected elements #
         self.elem.get('tree-selected').delete(*iids)
 
-    @__check
-    def __remove_all(self):
+    @check
+    def remove_all(self):
         # remove all elements #
         self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
-    def __print(self):
+    def print(self):
         name = self.vars.get('var').get('filename').get()
 
         # check if filename correct #
         if any(char in name for char in self.vars.get('badChars')):
-            self.__throw_error(7)
+            self.throw_error(7)
             return
 
         path = '{}\\{}.docx'.format(self.vars.get('var').get('filepath').get(), name)
@@ -521,7 +520,7 @@ class TaxPrinter:
         # check wherever file exists #
         if isfile(path):
             if not askokcancel(title='Plik już istnieje', message='Czy chcesz kontynuować?'):
-                self.__throw_error(3)
+                self.throw_error(3)
                 return
 
         # get projects, and prepare text #
@@ -535,9 +534,9 @@ class TaxPrinter:
 
                 # perpare variables #
                 desc, *dates = self.elem.get('tree-all').item(parent, 'values')
-                time = self.__get_date(self.vars.get('var').get('date').get(), vals[1:], 'string')
+                time = self.get_date(self.vars.get('var').get('date').get(), vals[1:], 'string')
                 if not time:
-                    self.__throw_error(4)
+                    self.throw_error(4)
                     return
 
                 # write text #
@@ -604,9 +603,9 @@ class TaxPrinter:
             showinfo(title='Zapisywanie', message='Sukces')
 
         except Exception as e:
-            self.__throw_error(e)
+            self.throw_error(e)
 
-    def __show_format(self):
+    def show_format(self):
         msg = \
             'Formatowanie opisu:\n' \
             '\n' \
@@ -622,7 +621,7 @@ class TaxPrinter:
             '<br> - nowa linia'
         showinfo(title='Formatowanie', message=msg)
 
-    def __show_help(self):
+    def show_help(self):
         msg = \
             'Program do drukowania opisów.\n' \
             '\n' \
@@ -637,7 +636,7 @@ class TaxPrinter:
             'Program napisany w Python, z pomocą TKinter.'
         showinfo(title='Pomoc', message=msg)
 
-    def __select_file(self):
+    def select_file(self):
         # get new path #
         path = askopenfilename(title='Wybierz plik', initialdir='\\'.join(self.vars.get('file').split('\\')[:-1]), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
         if not path:
@@ -645,18 +644,18 @@ class TaxPrinter:
 
         # check if extension correct #
         if '.json' not in path[-5:]:
-            self.__throw_error(6)
+            self.throw_error(6)
             return
 
         # set new file #
         self.vars.update({'file': path})
 
-    def __reload(self):
+    def reload(self):
         # reload data #
-        self.__clear_data()
-        self.__set_data()
+        self.clear_data()
+        self.set_data()
 
-    def __throw_error(self, error):
+    def throw_error(self, error):
         match error:
             case 0:
                 msg = 'Nic nie zostało wybrane'
@@ -683,13 +682,16 @@ class TaxPrinter:
 
 
     # other functions #
-    def __str2date(self, d):
+    @staticmethod
+    def str2date(d):
         return date(*reversed(tuple(int(x) for x in d.split('.'))))
 
-    def __date2str(self, d):
-        return '{}.{}.{}'.format(d.day, d.month, d.year)
+    @staticmethod
+    def date2str(d):
+        return '.'.join(*(d.day, d.month, d.year))
 
-    def __exint(self, n):
+    @staticmethod
+    def exint(n):
         try:
             return int(n)
         except Exception:
@@ -698,6 +700,10 @@ class TaxPrinter:
                 num = roman.get(n[i], 0)
                 rest = rest - num if 3 * num < rest else rest + num
             return rest
+    
+    @staticmethod
+    def get_state(state):
+        return 'normal' if state else 'disabled'
 
 
 if __name__ == '__main__':
