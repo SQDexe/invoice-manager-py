@@ -1,3 +1,4 @@
+from sys import version_info
 from os import getcwd
 from os.path import isfile
 from io import StringIO
@@ -33,6 +34,8 @@ class TaxPrinter:
                 'max': (650, 650)
                 },
             'file': '{}\\{}'.format(getcwd(), 'data.json'),
+            'py-ver': '{}.{}.{}'.format(version_info.major, version_info.minor, version_info.minor),
+            'tk-ver': self.root.tk.call('info', 'patchlevel'),
             'pad': 5,
             'var': {
                 'date': StrVar(),
@@ -51,7 +54,30 @@ class TaxPrinter:
                 },
             'style': Style(),
             'tags': ('b', 'i', 'u', 's'),
-	        'badChars': r'\/:*?"<>|'
+	        'badChars': r'\/:*?"<>|',
+            'errors': {
+                # 0XX - file errors
+                # 1XX - program errors
+                # 2XX - general errors
+                # 5XX - dp errors
+                # 6XX - tp errors
+                0: 'Błąd',
+                1: 'Brak podstawowego pliku danych',
+                2: 'Niedozwolony znak w nazwie pliku',
+                3: 'Brak nazwy pliku',
+                4: 'Złe rozszerzenie pliku',
+                5: 'Plik o tej nazwie już istnieje',
+                101: 'Funkcja na niedozwolonym elemencie',
+                201: 'Nie wybrano elementu',
+                501: 'Nie podano nazwy',
+                502: 'Nazwa zajęta',
+                503: 'Zły okres',
+                504: 'Okres zajęty',
+                505: 'Złe formatowanie tekstu',
+                601: 'Wybrany został projekt',
+                602: 'Punkt(y) już został wybrany',
+                603: 'Data poza zasięgiem'
+                }
             }
         self.elem = {
             'tree-all': {
@@ -233,7 +259,7 @@ class TaxPrinter:
 
             # sort by point, then by project #
             vals = [(iid, self.elem.get('tree-selected').set(iid, 'point'), self.elem.get('tree-selected').set(iid, 'project')) for iid in self.elem.get('tree-selected').get_children()]
-            vals.sort(key=lambda x: (x[2], tuple(self.exint(y) for y in x[1].split('.'))))
+            vals.sort(key=lambda x: (x[2], tuple(self.roman2int(y) for y in x[1].split('.'))))
             for i, (iid, *_) in enumerate(vals):
                 self.elem.get('tree-selected').move(iid, '', i)
 
@@ -341,7 +367,7 @@ class TaxPrinter:
     def set_data(self):
         # check if file exists #
         if not isfile(self.vars.get('file')):
-            self.throw_error(5)
+            self.throw_error(1)
             return
 
         # try to read data #
@@ -375,7 +401,7 @@ class TaxPrinter:
             case 'addons':
                 self.elem.get('entry-addons').config(state=self.get_state(self.vars.get('var').get('addons').get()))
             case _:
-                self.throw_error(8)
+                self.throw_error(101)
 
     def set_text(self):
         self.elem.get('txt-opening').delete('1.0', 'end')
@@ -426,6 +452,39 @@ class TaxPrinter:
 
     @sort
     @check
+    def add(self):
+        # get all iids, and leave out folders #
+        iids = tuple((x, self.elem.get('tree-all').parent(x)) for x in self.elem.get('tree-all').selection() if not self.elem.get('tree-all').tag_has('catalogue', x))
+
+        # check wherever iids correct #
+        if not iids:
+            self.throw_error(201)
+            return
+
+        # check wherever already not selected #
+        if any(x in tuple(y for y, _ in iids) for x in tuple(self.elem.get('tree-selected').item(x, 'values')[2] for x in self.elem.get('tree-selected').get_children())):
+            self.throw_error(602)
+            return
+
+        # add elements to table #
+        for iid, parent in iids:
+            vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
+            self.elem.get('tree-selected').insert('', 'end', values=vals)
+
+    @sort
+    @check
+    def add_all(self):
+        # clear table #
+        self.remove_all()
+
+        # refill table #
+        for parent in self.elem.get('tree-all').get_children():
+            for iid in self.elem.get('tree-all').get_children(parent):
+                vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
+                self.elem.get('tree-selected').insert('', 'end', values=vals)
+
+    @sort
+    @check
     def add_by_btn(self, event):
         iid = self.elem.get('tree-all').focus()
 
@@ -447,56 +506,12 @@ class TaxPrinter:
         self.elem.get('tree-selected').insert('', 'end', values=vals)
 
     @check
-    def remove_by_btn(self, event):
-        iid = self.elem.get('tree-selected').focus()
-
-        # check wherever iids correct #
-        if not iid:
-            return
-
-        # remove selected elements #
-        self.elem.get('tree-selected').delete(iid)
-
-    @sort
-    @check
-    def add(self):
-        # get all iids, and leave out folders #
-        iids = tuple((x, self.elem.get('tree-all').parent(x)) for x in self.elem.get('tree-all').selection() if not self.elem.get('tree-all').tag_has('catalogue', x))
-
-        # check wherever iids correct #
-        if not iids:
-            self.throw_error(0)
-            return
-
-        # check wherever already not selected #
-        if any(x in tuple(y for y, _ in iids) for x in tuple(self.elem.get('tree-selected').item(x, 'values')[2] for x in self.elem.get('tree-selected').get_children())):
-            self.throw_error(2)
-            return
-
-        # add elements to table #
-        for iid, parent in iids:
-            vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
-            self.elem.get('tree-selected').insert('', 'end', values=vals)
-
-    @sort
-    @check
-    def add_all(self):
-        # clear table #
-        self.remove_all()
-
-        # refill table #
-        for parent in self.elem.get('tree-all').get_children():
-            for iid in self.elem.get('tree-all').get_children(parent):
-                vals = (self.elem.get('tree-all').item(parent, 'text'), self.elem.get('tree-all').item(iid, 'text'), iid, parent)
-                self.elem.get('tree-selected').insert('', 'end', values=vals)
-
-    @check
     def remove(self):
         iids = tuple(x for x in self.elem.get('tree-selected').selection())
 
         # check wherever iids correct #
         if not iids:
-            self.throw_error(0)
+            self.throw_error(201)
             return
 
         # remove selected elements #
@@ -507,12 +522,28 @@ class TaxPrinter:
         # remove all elements #
         self.elem.get('tree-selected').delete(*self.elem.get('tree-selected').get_children())
 
+    @check
+    def remove_by_btn(self, event):
+        iid = self.elem.get('tree-selected').focus()
+
+        # check wherever iids correct #
+        if not iid:
+            return
+
+        # remove selected elements #
+        self.elem.get('tree-selected').delete(iid)
+
     def print(self):
         name = self.vars.get('var').get('filename').get()
 
+        ## check if filename not empty #
+        if not name:
+            self.throw_error(3)
+            return
+
         # check if filename correct #
         if any(char in name for char in self.vars.get('badChars')):
-            self.throw_error(7)
+            self.throw_error(2)
             return
 
         path = '{}\\{}.docx'.format(self.vars.get('var').get('filepath').get(), name)
@@ -520,7 +551,7 @@ class TaxPrinter:
         # check wherever file exists #
         if isfile(path):
             if not askokcancel(title='Plik już istnieje', message='Czy chcesz kontynuować?'):
-                self.throw_error(3)
+                self.throw_error(5)
                 return
 
         # get projects, and prepare text #
@@ -536,7 +567,7 @@ class TaxPrinter:
                 desc, *dates = self.elem.get('tree-all').item(parent, 'values')
                 time = self.get_date(self.vars.get('var').get('date').get(), vals[1:], 'string')
                 if not time:
-                    self.throw_error(4)
+                    self.throw_error(603)
                     return
 
                 # write text #
@@ -618,7 +649,10 @@ class TaxPrinter:
             '<p> - nazwa punktu (tylko w szablonie podpunktu)\n' \
             '<o> - treść punktu (tylko w szablonie podpunktu)\n' \
             '\n' \
-            '<br> - nowa linia'
+            '<br> - nowa linia\n' \
+            '\n' \
+            '{} - niedozwolone znaki nazwy pliku' \
+            .format(' '.join(self.vars.get('badChars')))
         showinfo(title='Formatowanie', message=msg)
 
     def show_help(self):
@@ -627,13 +661,15 @@ class TaxPrinter:
             '\n' \
             '\u2022 Większość elemntów wyświetla opisy po najechaniu.\n' \
             '\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n' \
-	    '\u2022 Elementy wybieramy na liście, a następnie klikamy\n' \
-	    'w odpowiedni guzik w celu podjęcia akcji.\n' \
+	        '\u2022 Elementy wybieramy na liście, a następnie klikamy\n' \
+	        'w odpowiedni guzik w celu podjęcia akcji.\n' \
             '\u2022 Dane podstawowo zapisane są w pliku "data.json",\n' \
             'można je przeładować, bądź wybrać inny plik danych.\n' \
             '\u2022 Aplikacja uruchamia się stosunkowo powoli.\n' \
             '\n' \
-            'Program napisany w Python, z pomocą TKinter.'
+            'Python {}\n' \
+            'TKinter {}' \
+            .format(self.vars.get('py-ver'), self.vars.get('tk-ver'))
         showinfo(title='Pomoc', message=msg)
 
     def select_file(self):
@@ -644,7 +680,7 @@ class TaxPrinter:
 
         # check if extension correct #
         if '.json' not in path[-5:]:
-            self.throw_error(6)
+            self.throw_error(4)
             return
 
         # set new file #
@@ -658,26 +694,9 @@ class TaxPrinter:
     def throw_error(self, error):
         match error:
             case 0:
-                msg = 'Nic nie zostało wybrane'
-            # old #
-            case 1:
-                msg = 'Wybrany został projekt'
-            case 2:
-                msg = 'Punkt(y) już został wybrany'
-            case 3:
-                msg = 'Plik o tej nazwie już istnieje'
-            case 4:
-                msg = 'Data poza zasięgiem'
-            case 5:
-                msg = 'Brak podstawowego pliku danych'
-            case 6:
-                msg = 'Złe rozszerzenie pliku'
-            case 7:
-                msg = 'Niedozwolony znak w nazwie ( {} )'.format(' '.join(self.vars.get('badChars')))
-            case 8:
-                msg = 'Funkcja na niedozwolonym elemencie'
+                msg = 'Nieznany błąd'
             case _:
-                msg = error
+                msg = self.vars.get('errors').get(error, error)
         showerror(title='Błąd', message=msg)
 
 
@@ -688,10 +707,10 @@ class TaxPrinter:
 
     @staticmethod
     def date2str(d):
-        return '.'.join(*(d.day, d.month, d.year))
+        return '{}.{}.{}'.format(d.day, d.month, d.year)
 
     @staticmethod
-    def exint(n):
+    def roman2int(n):
         try:
             return int(n)
         except Exception:
