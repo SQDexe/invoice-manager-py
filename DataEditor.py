@@ -1,3 +1,4 @@
+from sys import version_info
 from os import getcwd
 from os.path import isfile
 from json import loads, dumps
@@ -27,6 +28,8 @@ class DataEditor:
                 'max': (650, 650)
                 },
             'file': '{}\\{}'.format(getcwd(), 'data.json'),
+            'py-ver': '{}.{}.{}'.format(version_info.major, version_info.minor, version_info.minor),
+            'tk-ver': self.root.tk.call('info', 'patchlevel'),
             'pad': 5,
             'unsaved': False,
             'var': {
@@ -35,7 +38,30 @@ class DataEditor:
                 'date-end': StrVar()
                 },
             'style': Style(),
-            'tags': ('b', 'i', 'u', 's')
+            'tags': ('b', 'i', 'u', 's'),
+            'errors': {
+                # 0XX - file errors
+                # 1XX - program errors
+                # 2XX - general errors
+                # 5XX - dp errors
+                # 6XX - tp errors
+                0: 'Błąd',
+                1: 'Brak podstawowego pliku danych',
+                2: 'Niedozwolony znak w nazwie pliku',
+                3: 'Brak nazwy pliku',
+                4: 'Złe rozszerzenie pliku',
+                5: 'Plik o tej nazwie już istnieje',
+                101: 'Funkcja na niedozwolonym elemencie',
+                201: 'Nie wybrano elementu',
+                501: 'Nie podano nazwy',
+                502: 'Nazwa zajęta',
+                503: 'Zły okres',
+                504: 'Okres zajęty',
+                505: 'Złe formatowanie tekstu',
+                601: 'Wybrany został projekt',
+                602: 'Punkt(y) już został wybrany',
+                603: 'Data poza zasięgiem'
+                }
             }
         self.elem = {
             'tree-points': {
@@ -268,7 +294,7 @@ class DataEditor:
     def set_data(self):
         # check if file exists #
         if not isfile(self.vars.get('file')):
-            self.throw_error(6)
+            self.throw_error(1)
             return
 
         # try to read data #
@@ -329,7 +355,7 @@ class DataEditor:
 
         # check wherever element is focused #
         if not iid:
-            self.throw_error(0)
+            self.throw_error(201)
             return
 
         # assign text #
@@ -347,7 +373,7 @@ class DataEditor:
 
         # check wherever element is focused #
         if not iid:
-            self.throw_error(0)
+            self.throw_error(201)
             return
 
         # delete item #
@@ -363,12 +389,12 @@ class DataEditor:
 
         # check if name was given #
         if not name:
-            self.throw_error(1)
+            self.throw_error(501)
             return
 
         # check if name not taken #
         if name in tuple(self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children()):
-            self.throw_error(2)
+            self.throw_error(502)
             return
 
         # add catalogue #
@@ -382,12 +408,12 @@ class DataEditor:
 
         # check wherever element is focused #
         if not iid:
-            self.throw_error(0)
+            self.throw_error(201)
             return
 
         # check if name was given #
         if not name:
-            self.throw_error(1)
+            self.throw_error(501)
             return
 
         # get catalogue #
@@ -396,7 +422,7 @@ class DataEditor:
 
         # check if name not taken #	
         if name in tuple(self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children(iid)):
-            self.throw_error(2)
+            self.throw_error(502)
             return
 
         # insert element #
@@ -410,12 +436,12 @@ class DataEditor:
 
         # check wherever element is focused #
         if not iid:
-            self.throw_error(0)
+            self.throw_error(201)
             return
 
         # check if name was given #
         if not name:
-            self.throw_error(1)
+            self.throw_error(501)
             return
 
         # get catalogue #
@@ -423,7 +449,7 @@ class DataEditor:
 
         # check if name not taken #
         if name in tuple(self.elem.get('tree-points').item(x, 'text') for x in self.elem.get('tree-points').get_children(parent)):
-            self.throw_error(2)
+            self.throw_error(502)
             return
 
         # set new name #
@@ -435,7 +461,7 @@ class DataEditor:
 
         # check wherever element is focused #
         if not iid:
-            self.throw_error(0)
+            self.throw_error(201)
             return
 
         # update values #
@@ -457,13 +483,13 @@ class DataEditor:
 
         # check wherever element is focused #
         if not parent_iid:
-            self.throw_error(0)
+            self.throw_error(201)
             return
 
         # check if range is correct #
         dates = tuple(self.str2date(x) for x in (self.vars.get('var').get('date-beg').get(), self.vars.get('var').get('date-end').get()))
         if dates[1] <= dates[0]:
-            self.throw_error(4)
+            self.throw_error(503)
             return
 
         # check for other dates #
@@ -472,18 +498,18 @@ class DataEditor:
             # check if date not taken #
             current_dates = tuple((iid, tuple(self.str2date(z) for z in (x, y))) for iid, (x, y) in tuple((iid, self.elem.get('tree-dates').item(iid, 'values')[1:3]) for iid in self.elem.get('tree-dates').get_children()))
             if not all(dates[1] < start or end < dates[0] for _, (start, end) in current_dates):
-                self.throw_error(5)
+                self.throw_error(504)
                 return
 
             # get right index #
-            ommit = (0, len(current_dates) - 1)
-            if dates[1] < current_dates[ommit[0]][1][0]:
+            ommit = len(current_dates) - 1
+            if dates[1] < current_dates[0][1][0]:
                 index = 0
-            elif current_dates[ommit[1]][1][0] < dates[0]:
-                index = ommit[1] + 1
+            elif current_dates[ommit][1][0] < dates[0]:
+                index = ommit + 1
             else:
                 for i, (iid, _) in enumerate(current_dates):
-                    if i in ommit:
+                    if i in (0, ommit):
                         continue
                     if current_dates[i - 1][1][1]  < dates[0] and dates[1] < current_dates[i][1][0]:
                         index = i
@@ -511,7 +537,7 @@ class DataEditor:
                     'point': self.elem.get('tree-points').item(item, 'text'),
                     'text': self.elem.get('tree-points').item(item, 'values')[0]
                     })
-            points.sort(key=lambda x: tuple(self.exint(y) for y in x.get('point').split('.')))
+            points.sort(key=lambda x: tuple(self.roman2int(y) for y in x.get('point').split('.')))
             file.append({
                 'name': self.elem.get('tree-points').item(project, 'text'),
                 'description': vals[0],
@@ -564,7 +590,9 @@ class DataEditor:
             'można je przeładować, bądź wybrać inny plik danych.\n' \
             '\u2022 Aplikacja uruchamia się stosunkowo powoli.\n' \
             '\n' \
-            'Program napisany w Python, z pomocą TKinter.'
+            'Python {}\n' \
+            'TKinter {}' \
+            .format(self.vars.get('py-ver'), self.vars.get('tk-ver'))
         showinfo(title='Pomoc', message=msg)
 
     def select_file(self):
@@ -575,7 +603,7 @@ class DataEditor:
 
         # check if extension correct #
         if '.json' not in path[-5:]:
-            self.throw_error(7)
+            self.throw_error(4)
             return
 
         # set new file #
@@ -599,23 +627,9 @@ class DataEditor:
     def throw_error(self, error):
         match error:
             case 0:
-                msg = 'Nie wybrano elementu'
-            case 1:
-                msg = 'Nie podano nazwy'
-            case 2:
-                msg = 'Nazwa zajęta'
-            case 3:
-                msg = 'Złe formatowanie tekstu'
-            case 4:
-                msg = 'Zły okres'
-            case 5:
-                msg = 'Okres zajęty'
-            case 6:
-                msg = 'Brak podstawowego pliku danych'
-            case 7:
-                msg = 'Złe rozszerzenie pliku'
+                msg = 'Nieznany błąd'
             case _:
-                msg = error
+                msg = self.vars.get('errors').get(error, error)
         showerror(title='Błąd', message=msg)
 
 
@@ -626,10 +640,10 @@ class DataEditor:
 
     @staticmethod
     def date2str(d):
-        return '.'.join(*(d.day, d.month, d.year))
+        return '{}.{}.{}'.format(d.day, d.month, d.year)
 
     @staticmethod
-    def exint(n):
+    def roman2int(n):
         try:
             return int(n)
         except Exception:
