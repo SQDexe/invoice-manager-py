@@ -54,7 +54,7 @@ class TaxPrinter:
                 },
             'style': Style(),
             'tags': ('b', 'i', 'u', 's'),
-	        'badChars': r'\/:*?"<>|',
+	        'bad-chars': r'\/:*?"<>|',
             'errors': {
                 # 0XX - file errors
                 # 1XX - program errors
@@ -290,7 +290,7 @@ class TaxPrinter:
                     ('command', {'label': 'Wybierz...', 'command': self.select_file}),
                     ('command', {'label': 'Przeładuj', 'command': self.reload}),
                     ('separator', None),
-                    ('command', {'label': 'Wyjdź', 'command': self.root.destroy})
+                    ('command', {'label': 'Wyjdź', 'command': self.close})
                     ]
                 }
             }
@@ -542,7 +542,7 @@ class TaxPrinter:
             return
 
         # check if filename correct #
-        if any(char in name for char in self.vars.get('badChars')):
+        if any(char in name for char in self.vars.get('bad-chars')):
             self.throw_error(2)
             return
 
@@ -636,6 +636,9 @@ class TaxPrinter:
         except Exception as e:
             self.throw_error(e)
 
+    def close(self):
+	self.root.destroy()
+
     def show_format(self):
         msg = \
             'Formatowanie opisu:\n' \
@@ -652,7 +655,7 @@ class TaxPrinter:
             '<br> - nowa linia\n' \
             '\n' \
             '{} - niedozwolone znaki nazwy pliku' \
-            .format(' '.join(self.vars.get('badChars')))
+            .format(' '.join(self.vars.get('bad-chars')))
         showinfo(title='Formatowanie', message=msg)
 
     def show_help(self):
