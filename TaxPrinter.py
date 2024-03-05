@@ -235,6 +235,9 @@ class TaxPrinter:
         self.root.title(self.vars.get('title'))
         self.root.iconphoto(False, PhotoImage(data=b64decode(self.vars.get('icon'))))
 
+        # protocols #
+        self.root.protocol('WM_DELETE_WINDOW', self.close)
+
         # prepare elements #
         self.prep_elems()
         self.set_data()
