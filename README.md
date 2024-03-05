@@ -5,7 +5,16 @@ Written for use in Polish language, can be adjusted with just a few tweaks
 
 Compiled using pyinstaller:
 ```
-pyinstaller {file}.py --hidden-import babel.numbers --noconsole --onefile --icon={icon}.ico
+pyinstaller {file} ^
+  --clean ^
+  --onefile ^
+  --noconsole ^
+  --noconfirm ^
+  --distpath ./ ^
+  --workpath ./{dump_folder} ^
+  --specpath ./{dump_folder} ^
+  --hidden-import babel.numbers ^
+  --icon {icon}
 ```
 
 Made with:
