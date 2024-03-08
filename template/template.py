@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
 
 from sys import version_info
-from os import getcwd
 from datetime import date
 
 from base64 import b64decode
 
 from tkinter import Tk, PhotoImage, Menu
 from tkinter.ttk import Style, Frame
-from tkinter.messagebox import showerror
+from tkinter.messagebox import showerror, showinfo
 from tktooltip import ToolTip
+
+# from accessify impor protected
 
 class WindowApp(ABC):
 	def __init__(self, title, icon, minSize, maxSize):
@@ -18,13 +19,12 @@ class WindowApp(ABC):
 
 		# declearing variables, and elements #
 		self.vars = {
-			'title': title,
-			'icon': icon,
+			'title': None,
+			'icon': None,
 			'size': {
-				'min': minSize,
-				'max': maxSize
+				'min': (None, None),
+				'max': (None, None)
 				},
-			'file': '{}\\{}'.format(getcwd(), 'data.json'),
 			'py-ver': '{}.{}.{}'.format(version_info.major, version_info.minor, version_info.micro),
 			'tk-ver': self.root.tk.call('info', 'patchlevel'),
 			'errors': {
@@ -172,11 +172,8 @@ class WindowApp(ABC):
 		pass
 
 	def throw_error(self, error):
-		match error:
-			case 0:
-				msg = 'Nieznany błąd'
-			case _:
-				msg = self.vars['errors'].get(error, error)
+		txt = 'Błąd' if self.vars['errors'].get(error) else 'Nieznany błąd'
+		msg = self.vars['errors'].get(error, error)
 		showerror(title='Błąd', message=msg)
 
 	# other functions #
