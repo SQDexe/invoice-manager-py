@@ -1,15 +1,16 @@
 from template import WindowApp
 
+from os import getcwd
 from os.path import isfile
 from json import loads, dumps
 
-# from accessify import private
-
 from tkinter import StringVar as StrVar, Text
-from tkinter.ttk import Frame, Entry, Button, Treeview, Scrollbar, Label
+from tkinter.ttk import Entry, Button, Treeview, Scrollbar, Label
 from tkinter.messagebox import showinfo, askokcancel
 from tkinter.filedialog import askopenfilename
 from tkcalendar import DateEntry
+
+# from accessify import private
 
 class DataEditor(WindowApp):
     # decorator for changes #
@@ -331,10 +332,20 @@ class DataEditor(WindowApp):
 
     # overridden #
     def pre(self):
+        # important #
+        self.vars.update({
+            'title': 'Data Editor',
+            'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAVUExURQAAAP///9vb2wAAAP/vlOr/Sv+UlPDI24oAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqAAa89zwAAAAtSURBVAjXY2DABIyCggoQhrGxEoMBRERJwQEiYiwQABERhDBIFlGAMRKw2A0ARWIITkVLLqYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMTEtMDhUMTY6NDE6NTkrMDA6MDBL+4JDAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTExLTA4VDE2OjQxOjU5KzAwOjAwOqY6/wAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyMy0xMS0wOFQxNjo0MjowMCswMDowMFv865QAAAAASUVORK5CYII=',
+            'size': {
+                'min': (400, 450),
+                'max': (650, 650)
+                }
+            })
+        
         # add, and set variables #
         self.vars.update({
-            'unsaved': False,
-            'tags': ('b', 'i', 'u', 's')
+            'file': '{}\\{}'.format(getcwd(), 'data.json'),
+            'unsaved': False
             })
         self.vars['var'].update({
             'name': StrVar(),
@@ -494,11 +505,4 @@ class DataEditor(WindowApp):
 
 
 if __name__ == '__main__':
-    title = 'Data Editor'
-    icon = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAVUExURQAAAP///9vb2wAAAP/vlOr/Sv+UlPDI24oAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqAAa89zwAAAAtSURBVAjXY2DABIyCggoQhrGxEoMBRERJwQEiYiwQABERhDBIFlGAMRKw2A0ARWIITkVLLqYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMTEtMDhUMTY6NDE6NTkrMDA6MDBL+4JDAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTExLTA4VDE2OjQxOjU5KzAwOjAwOqY6/wAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyMy0xMS0wOFQxNjo0MjowMCswMDowMFv865QAAAAASUVORK5CYII='
-    size = {
-        'min': (400, 450),
-        'max': (650, 650)
-        }
-
-    DataEditor(title=title, icon=icon, minSize=size['min'], maxSize=size['max'])
+    DataEditor()
