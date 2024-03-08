@@ -10,11 +10,11 @@ pyinstaller {file} ^
   --onefile ^
   --noconsole ^
   --noconfirm ^
-  --distpath ./ ^
-  --workpath ./{dump_folder} ^
-  --specpath ./{dump_folder} ^
+  --distpath .\\ ^
+  --workpath .\\{dump_folder} ^
+  --specpath .\\{dump_folder} ^
   --hidden-import babel.numbers ^
-  --icon {icon}
+  --icon ..\\{icon}
 ```
 
 Made with:
