@@ -1,8 +1,9 @@
-from template import WindowApp
+from utilities import WindowApp
 
 from os import getcwd
 from os.path import isfile
 from json import loads, dumps
+from functools import wraps
 
 from tkinter import StringVar as StrVar, Text
 from tkinter.ttk import Entry, Button, Treeview, Scrollbar, Label
@@ -15,7 +16,8 @@ from tkcalendar import DateEntry
 class DataEditor(WindowApp):
     # decorator for changes #
     def safecheck(f):
-        def wrapper(self):
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
             f(self)
             self.elem['btn-save'].config(state='normal')
             self.vars.update({'unsaved': True})
