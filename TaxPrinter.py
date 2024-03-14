@@ -1,10 +1,11 @@
-from template import WindowApp
+from utilities import WindowApp
 
 from os import getcwd
 from os.path import isfile
 from io import StringIO
 from json import loads
 from re import findall, split, sub
+from functools import wraps
 
 from unidecode import unidecode
 
@@ -22,7 +23,8 @@ from tkcalendar import DateEntry
 class TaxPrinter(WindowApp):
 	# decorators #
 	def check(f):
-	    def wrapper(self, *args):
+	    @wraps(f)
+	    def wrapper(self, *args, **kwargs):
 	        f(self)
 
 	        childs = self.elem['tree-selected'].get_children()
@@ -32,7 +34,8 @@ class TaxPrinter(WindowApp):
 	    return wrapper
 
 	def sort(f):
-	    def wrapper(self, *args):
+	    @wraps(f)
+	    def wrapper(self, *args, **kwargs):
 	        f(self)
 
 	        # sort by point, then by project #
@@ -71,16 +74,12 @@ class TaxPrinter(WindowApp):
 	    self.elem['tree-selected'].delete(*self.elem['tree-selected'].get_children())
 
 	def toggle(self, elem):
-	    match elem:
-	        case 'cash':
-	            state = self.get_state(self.vars['var']['cash'].get())
-	            self.elem['entry-cash'].config(state=state)
-	            self.elem['radbtn-auto'].config(state=state)
-	            self.elem['radbtn-all'].config(state=state)
-	        case 'addons':
-	            self.elem['entry-addons'].config(state=self.get_state(self.vars['var']['addons'].get()))
-	        case _:
-	            self.throw_error(101)
+	    states = (self.vars['var']['cash'].get(), self.vars['var']['addons'].get())
+	    cash_state, addons_state = tuple(self.get_state(x) for x in states)
+	    self.elem['entry-cash'].config(state=cash_state)
+	    self.elem['radbtn-auto'].config(state=cash_state)
+	    self.elem['radbtn-all'].config(state=cash_state)
+	    self.elem['entry-addons'].config(state=addons_state)
 
 	def set_text(self):
 	    self.elem['txt-opening'].delete('1.0', 'end')
@@ -88,7 +87,7 @@ class TaxPrinter(WindowApp):
 
 	def get_date(self, date, dates, mode='raw'):
 	    # check which timeframe is correct #
-	    date, *dates = (self.str2date(x) for x in (date, *dates))
+	    date, *dates = tuple(self.str2date(x) for x in (date, *dates))
 	    if chosen := tuple((dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]):
 	        match mode:
 	            case 'string':
@@ -457,7 +456,7 @@ class TaxPrinter(WindowApp):
 	            },
 	        'chkbtn-cash': {
 	            'type': Checkbutton,
-	            'args': {'text': 'Dodaj pole kwoty', 'variable': self.vars['var']['cash'], 'command': lambda: self.toggle('cash')},
+	            'args': {'text': 'Dodaj pole kwoty', 'variable': self.vars['var']['cash'], 'command': self.toggle},
 	            'grid': {'row': 7, 'column': 0},
 	            'sticky': 'W'
 	            },
@@ -482,7 +481,7 @@ class TaxPrinter(WindowApp):
 	            },
 	        'chkbtn-addons': {
 	            'type': Checkbutton,
-	            'args': {'text': 'Dodaj myślniki', 'variable': self.vars['var']['addons'], 'command': lambda: self.toggle('addons')},
+	            'args': {'text': 'Dodaj myślniki', 'variable': self.vars['var']['addons'], 'command': self.toggle},
 	            'grid': {'row': 9, 'column': 0},
 	            'sticky': 'W'
 	            },
