@@ -345,7 +345,7 @@ class TaxPrinter(WindowApp):
 	        return
 
 	    # set new file #
-	    self.vars.update({'file': path})
+	    self.vars['file'] = path
 
 	def reload(self):
 	    # reload data #
