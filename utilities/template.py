@@ -96,20 +96,20 @@ class WindowApp(ABC):
 		main = 'main'
 
 		# mainframe #
-		self.elem.update({main: Frame(self.root)})
+		self.elem[main] = Frame(self.root)
 		self.elem[main].pack(fill='both', expand=True)
 
 		# create, and configure elements #
 		for key, data in ((x, y) for x, y in self.elem.items() if x != main):
-			self.elem.update({key: data['type'](self.elem[main], **data.get('args', {}))})
+			self.elem[key] = data['type'](self.elem[main], **data.get('args', {}))
 			options = {'padx': self.vars['pad'], 'pady': self.vars['pad']}
 			if nopad := data.get('nopad'):
 				if 'x' in nopad:
-					options.update({'padx': 0})
+					options['padx'] = 0
 				if 'y' in nopad:
-					options.update({'pady': 0})
+					options['pady'] = 0
 			if stick := data.get('sticky'):
-				options.update({'sticky': stick})
+				options['sticky'] = stick
 			self.elem[key].grid(**data['grid'], **options)
 			if border := data.get('borderfull'):
 				self.elem[key].config(**border)
@@ -125,7 +125,7 @@ class WindowApp(ABC):
 
 		# create menus #
 		for key, data in self.menus.items():
-			self.elem.update({key: Menu(self.root, tearoff=0)})
+			self.elem[key] = Menu(self.root, tearoff=0)
 			if data.get('main'):
 				self.root.config(menu=self.elem[key])
 		for key, data in self.menus.items():
