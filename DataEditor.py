@@ -20,7 +20,7 @@ class DataEditor(WindowApp):
         def wrapper(self, *args, **kwargs):
             f(self)
             self.elem['btn-save'].config(state='normal')
-            self.vars.update({'unsaved': True})
+            self.vars['unsaved'] = True
         return wrapper
 
     def set_data(self):
@@ -284,7 +284,7 @@ class DataEditor(WindowApp):
                 f.write(dumps(file))
             showinfo(title='Zapisywanie', message='Sukces')
             self.elem['btn-save'].config(state='disabled')
-            self.vars.update({'unsaved': False})
+            self.vars['unsaved'] = False
 
         except Exception as e:
             self.throw_error(e)
@@ -315,7 +315,7 @@ class DataEditor(WindowApp):
             return
 
         # set new file #
-        self.vars.update({'file': path})
+        self.vars['file'] = path
 
     def reload(self):
         # check for changes #
@@ -327,7 +327,7 @@ class DataEditor(WindowApp):
         self.clear_data()
         self.set_data()
         self.elem['btn-save'].config(state='disabled')
-        self.vars.update({'unsaved': False})
+        self.vars['unsaved'] = False
 
     def ask_changes(self):
         return askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
