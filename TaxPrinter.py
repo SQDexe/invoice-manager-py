@@ -89,13 +89,14 @@ class TaxPrinter(WindowApp):
 	    # check which timeframe is correct #
 	    date, *dates = tuple(self.str2date(x) for x in (date, *dates))
 	    if chosen := tuple((dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]):
+		chosen_data = chosen[0]
 	        match mode:
 	            case 'string':
-	                return ' - '.join(('{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year) for x in chosen[0]))
+	                return ' - '.join(('{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year) for x in chosen_data))
 	            case 'int':
-	                return tuple((x.day, x.month, x.year) for x in chosen[0])
+	                return tuple((x.day, x.month, x.year) for x in chosen_data)
 	            case 'raw' | _:
-	                return chosen[0]
+	                return chosen_data
 	    else:
 	        return None
 
