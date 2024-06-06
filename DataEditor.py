@@ -455,7 +455,7 @@ class DataEditor(WindowApp):
                 'type': Button,
                 'args': {'text': 'Zapisz', 'command': self.save_file, 'state': 'disabled'},
                 'grid': {'row': 7, 'column': 4, 'columnspan': 2},
-                'tooltip': 'Zapisz zmainy w pliku'
+                'tooltip': 'Zapisz zmiany w pliku'
                 }
             })
         self.grid['row'].update({
