@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 
-from sys import version_info
+from sys import version_info, executable
 from datetime import date
-
-from base64 import b64decode
 
 from tkinter import Tk, PhotoImage, Menu
 from tkinter.ttk import Style, Frame
@@ -20,7 +18,6 @@ class WindowApp(ABC):
 		# declearing variables, and elements #
 		self.vars = {
 			'title': None,
-			'icon': None,
 			'size': {
 				'min': (None, None),
 				'max': (None, None)
@@ -78,7 +75,7 @@ class WindowApp(ABC):
 			int((self.root.winfo_screenheight() - height) / 2)
 			))
 		self.root.title(self.vars['title'])
-		self.root.iconphoto(False, PhotoImage(data=b64decode(self.vars['icon'])))
+		self.root.iconbitmap(executable)
 
 		# protocols #
 		self.root.protocol('WM_DELETE_WINDOW', self.close)
