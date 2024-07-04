@@ -5,6 +5,9 @@ Programmes written to automate the process of signing documents by qucik generat
 Compiled using pyinstaller:
 ```
 pyinstaller {file} ^
+  --name "{name}" ^
+  --icon ..\\{icon} ^
+  --optimize 2 ^
   --clean ^
   --onefile ^
   --noconsole ^
@@ -12,8 +15,7 @@ pyinstaller {file} ^
   --distpath .\\ ^
   --workpath .\\{dump_folder} ^
   --specpath .\\{dump_folder} ^
-  --hidden-import babel.numbers ^
-  --icon ..\\{icon}
+  --hidden-import babel.numbers
 ```
 
 Made with:
