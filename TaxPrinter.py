@@ -27,9 +27,9 @@ class TaxPrinter(WindowApp):
 	    def wrapper(self, *args, **kwargs):
 	        f(self)
 
-	        childs = self.elem['tree-selected'].get_children()
+	        childs = bool(self.elem['tree-selected'].get_children())
 	        self.elem['btn-print'].config(state=self.get_state(childs))
-	        self.elem['btn-name'].config(state=self.get_state(len(childs) == 1))
+	        self.elem['btn-name'].config(state=self.get_state(childs))
 
 	    return wrapper
 
@@ -107,24 +107,27 @@ class TaxPrinter(WindowApp):
 
 	def make_name(self):
 	    # get values #
-	    iid, name = self.elem['tree-selected'].get_children()[0], []
-	    project, point, _, parent = self.elem['tree-selected'].item(iid, 'values')
+	    iids, name = self.elem['tree-selected'].get_children(), []
 
 	    # make new filename #
 	    if self.vars['var']['opening-mode'].get() == 'contract':
 	        name.append('u')
-	    name.append(sub('[^a-z0-9]+', '', unidecode(project).lower()))
-	    name.append(''.join(point.split('.')))
 
-	    if time := self.get_date(self.vars['var']['date'].get(), self.elem['tree-all'].item(parent, 'values')[1:]):
-	        start, end = time
-	        if start.year == end.year:
-	            if start.month == end.month:
-	                name.append('{}-{}_{}_{:02d}'.format(start.day, end.day, start.month, start.year % 100))
-	            else:
-	                name.append('{}-{}_{:02d}'.format(start.month, end.month, start.year % 100))
-	        else:
-	            name.append('{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100))
+	    if len(iids) != 1:
+	        name.extend(sorted(set(sub('[^a-z]+', '', unidecode(self.elem['tree-all'].item(iid, 'values')[0]).lower()) for iid in iids)))
+	    else:
+		project, point, _, parent = self.elem['tree-selected'].item(iid, 'values')
+		name.append(sub('[^a-z0-9]+', '', unidecode(project).lower()))
+		name.append(''.join(point.split('.')))
+
+	    	if time := self.get_date(self.vars['var']['date'].get(), self.elem['tree-all'].item(*iids, 'values')[1:]):
+	            start, end = time
+		    name.append(( \
+			    '{}-{}_{}_{:02d}'.format(start.day, end.day, start.month, start.year % 100) \
+			    if start.month == end.month else \
+			    '{}-{}_{:02d}'.format(start.month, end.month, start.year % 100)) \
+			if start.year == end.year else \
+		    	'{}_{:02d}-{}_{:02d}'.format(start.month, start.year % 100, end.month, end.year % 100))
 
 	    # set the filename #
 	    self.vars['var']['filename'].set('_'.join(name))
@@ -358,7 +361,6 @@ class TaxPrinter(WindowApp):
 	    # important #
 		self.vars.update({
 	        'title': 'Tax Printer',
-	        'icon': 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAeUExURQAAAP///9vb2wAAAI+Pj/+FhYv/hf//a3BwcPDw8ChUvUYAAAABdFJOUwBA5thmAAAAAWJLR0QB/wIt3gAAAAd0SU1FB+cLCBAqL61tymUAAAA9SURBVAjXY2BAAEFBIQhD2NhIASaiBBUxNoSKCApiF3EBAyDDNQVIlyCLuBgDAZihBAQgRsdMIOhAMRACAAYpDjSL+1GnAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIzLTExLTA4VDE2OjQyOjQ2KzAwOjAwmi5JNwAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMy0xMS0wOFQxNjo0Mjo0NiswMDowMOtz8YsAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjMtMTEtMDhUMTY6NDI6NDcrMDA6MDAaEdvgAAAAAElFTkSuQmCC',
 	        'size': {
 	            'min': (400, 450),
 	            'max': (650, 650)
