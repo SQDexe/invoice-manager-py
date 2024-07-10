@@ -22,8 +22,11 @@ class WindowApp(ABC):
 				'min': (None, None),
 				'max': (None, None)
 				},
-			'py-ver': '{}.{}.{}'.format(version_info.major, version_info.minor, version_info.micro),
-			'tk-ver': self.root.tk.call('info', 'patchlevel'),
+			'ver': {
+				'py': '{}.{}.{}'.format(version_info.major, version_info.minor, version_info.micro),
+				'tk': self.root.tk.call('info', 'patchlevel'),
+				'pyinst': '6.8.0'
+				},
 			'errors': {
 				# 0XX - file errors
 				0: 'Błąd',
@@ -148,20 +151,21 @@ class WindowApp(ABC):
 		pass
 
 	def show_help(self):
-		msg = \
-			'Program do drukowania opisów.\n' \
-			'\n' \
-			'\u2022 Większość elemntów wyświetla opisy po najechaniu.\n' \
-			'\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n' \
-			'\u2022 Elementy wybieramy na liście, a następnie klikamy\n' \
-			'w odpowiedni guzik w celu podjęcia akcji.\n' \
-			'\u2022 Dane podstawowo zapisane są w pliku "data.json",\n' \
-			'można je przeładować, bądź wybrać inny plik danych.\n' \
-			'\u2022 Aplikacja uruchamia się stosunkowo powoli.\n' \
-			'\n' \
-			'Python {}\n' \
-			'TKinter {}' \
-			.format(self.vars['py-ver'], self.vars['tk-ver'])
+		msg = (
+			'Program do drukowania opisów.\n'
+			'\n'
+			'\u2022 Większość elemntów wyświetla opisy po najechaniu.\n'
+			'\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n'
+			'\u2022 Elementy wybieramy na liście, a następnie klikamy\n'
+			'w odpowiedni guzik w celu podjęcia akcji.\n'
+			'\u2022 Dane podstawowo zapisane są w pliku "data.json",\n'
+			'można je przeładować, bądź wybrać inny plik danych.\n'
+			'\u2022 Aplikacja uruchamia się stosunkowo powoli.\n'
+			'\n'
+			'Python {}\n'
+			'TKinter {}\n'
+			'PyInstaller {}'
+			).format(self.vars['ver']['py'], self.vars['ver']['tk'], self.vars['ver']['pyinst'])
 		showinfo(title='Pomoc', message=msg)
 
 	@abstractmethod
