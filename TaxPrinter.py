@@ -516,7 +516,7 @@ class TaxPrinter(WindowApp):
 	            },
 	        'btn-filepath': {
 	            'type': Button,
-	            'args': {'text': '...', 'command': self.set_path},
+	            'args': {'text': '\u2026', 'command': self.set_path},
 	            'grid': {'row': 9, 'column': 3},
 	            'tooltip': 'Wybierz ścieżkę docelową',
 	            'sticky': 'W'
