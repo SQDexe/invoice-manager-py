@@ -290,17 +290,18 @@ class DataEditor(WindowApp):
             self.throw_error(e)
 
     def show_format(self):
-        msg = \
-            'Formatowanie opisu:\n' \
-            '\n' \
-            '<b> ... </b> - pogrubienie\n' \
-            '<i> ... </i> - kursywa\n' \
-            '<u> ... </u> - podkreślenie\n' \
-            '<s> ... </s> - przekreślenie\n' \
-            '\n' \
-            '<d> - okres (tylko w opisie projektu)\n' \
-            '\n' \
+        msg = (
+            'Formatowanie opisu:\n'
+            '\n'
+            '<b> ... </b> - pogrubienie\n'
+            '<i> ... </i> - kursywa\n'
+            '<u> ... </u> - podkreślenie\n'
+            '<s> ... </s> - przekreślenie\n'
+            '\n'
+            '<d> - okres (tylko w opisie projektu)\n'
+            '\n'
             '<br> - nowa linia'
+            )
         showinfo(title='Formatowanie', message=msg)
 
     def select_file(self):
