@@ -19,6 +19,6 @@ pyinstaller {file} ^
 ```
 
 Made with:
-- Python
-- TKinter
-- PyInstaller
+- Python 3.12.4
+- TKinter 8.6.13
+- PyInstaller 6.8.0
