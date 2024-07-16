@@ -160,9 +160,12 @@ class WindowApp(ABC):
             '\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n'
             '\u2022 Elementy wybieramy na liście, a następnie klikamy\n'
             'w odpowiedni guzik w celu podjęcia akcji.\n'
+            '\u2022 W nazwach punktów wolno używać jedynie\n'
+            'liczb arabskich, liczb rzymskich oraz kropek\n'
             '\u2022 Dane podstawowo zapisane są w pliku "data.json",\n'
             'można je przeładować, bądź wybrać inny plik danych.\n'
-            '\u2022 Aplikacja uruchamia się stosunkowo powoli.\n'
+            '\u2022 Aplikacja ma powolny proces uruchamiania\n'
+            'spowodowany trybem kompilacji.\n'
             '\n'
             'Python {}\n'
             'TKinter {}\n'
@@ -186,7 +189,7 @@ class WindowApp(ABC):
 
     @staticmethod
     def date2str(d: date) -> str:
-        return '{}.{}.{}'.format(d.day, d.month, d.year)
+        return ('{:02d}.{:02d}.{:04d}'.format(d.day, d.month, d.year)
 
     @staticmethod
     def roman2int(n: str) -> int:
@@ -194,6 +197,8 @@ class WindowApp(ABC):
             return int(n)
         except Exception:
             roman, rest, n = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}, 0, n.upper()
+            if not set(roman.keys()).issuperset(n):
+                return 0
             for i in range(len(n) - 1, -1, -1):
                 num = roman.get(n[i], 0)
                 rest = rest - num if 3 * num < rest else rest + num
@@ -204,14 +209,14 @@ class WindowApp(ABC):
         return 'normal' if state else 'disabled'
 
     @staticmethod
-    def get_date(date: str, dates: list[date] | tuple[date], mode: str='raw') -> str | tuple[date] | date | None:
+    def get_date(date: str, dates: list[date] | tuple[date], mode: str='raw') -> str | tuple[date] | tuple[date] | None:
         # check which timeframe is correct #
         date, *dates = tuple(WindowApp.str2date(x) for x in (date, *dates))
         if chosen := tuple((dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]):
             chosen_data = chosen[0]
             match mode:
                 case 'string':
-                    return ' - '.join(('{:02d}.{:02d}.{:04d}'.format(x.day, x.month, x.year) for x in chosen_data))
+                    return ' - '.join(WindowApp.date2str(x) for x in chosen_data)
                 case 'int':
                     return tuple((x.day, x.month, x.year) for x in chosen_data)
                 case 'raw' | _:
