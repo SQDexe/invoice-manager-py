@@ -288,21 +288,6 @@ class DataEditor(PrinterApp):
         except Exception as e:
             self.throw_error(e)
 
-    def show_format(self):
-        msg = (
-            'Formatowanie opisu:\n'
-            '\n'
-            '<b> ... </b> - pogrubienie\n'
-            '<i> ... </i> - kursywa\n'
-            '<u> ... </u> - podkreślenie\n'
-            '<s> ... </s> - przekreślenie\n'
-            '\n'
-            '<d> - okres (tylko w opisie projektu)\n'
-            '\n'
-            '<br> - nowa linia'
-            )
-        showinfo(title='Formatowanie', message=msg)
-
     def reload(self):
         # check for changes #
         if self.vars['unsaved']:
