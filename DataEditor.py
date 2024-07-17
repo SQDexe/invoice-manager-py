@@ -304,20 +304,6 @@ class DataEditor(PrinterApp):
             )
         showinfo(title='Formatowanie', message=msg)
 
-    def select_file(self):
-        # get new path #
-        path = askopenfilename(title='Wybierz plik', initialdir='\\'.join(self.vars['file'].split('\\')[:-1]), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
-        if not path:
-            return
-
-        # check if extension correct #
-        if '.json' not in path[-5:]:
-            self.throw_error(4)
-            return
-
-        # set new file #
-        self.vars['file'] = path
-
     def reload(self):
         # check for changes #
         if self.vars['unsaved']:
