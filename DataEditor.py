@@ -8,7 +8,6 @@ from functools import wraps
 from tkinter import StringVar as StrVar, Text
 from tkinter.ttk import Entry, Button, Treeview, Scrollbar, Label
 from tkinter.messagebox import showinfo, askokcancel
-from tkinter.filedialog import askopenfilename
 from tkcalendar import DateEntry
 
 # from accessify import private
