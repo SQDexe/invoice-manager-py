@@ -240,3 +240,23 @@ class PrinterApp(WindowApp):
             'PyInstaller {}'
             ).format(self.vars['ver']['py'], self.vars['ver']['tk'], self.vars['ver']['pyinst'])
         showinfo(title='Pomoc', message=msg)
+
+    def show_format(self):
+        msg = (
+            'Formatowanie opisu:\n'
+            '\n'
+            '<b> \u2026 </b> - pogrubienie\n'
+            '<i> \u2026 </i> - kursywa\n'
+            '<u> \u2026 </u> - podkreślenie\n'
+            '<s> \u2026 </s> - przekreślenie\n'
+            '\n'
+            '<d> - okres (tylko w opisie projektu)\n'
+            '<t> - podpis projektu (niedostępny)\n'
+            '<p> - nazwa punktu (tylko w szablonie podpunktu)\n'
+            '<o> - treść punktu (tylko w szablonie podpunktu)\n'
+            '\n'
+            '<br> - nowa linia\n'
+            '\n'
+            '{} - niedozwolone znaki nazwy pliku'
+        ).format(' '.join(self.vars['bad-chars']))
+        showinfo(title='Formatowanie', message=msg)
