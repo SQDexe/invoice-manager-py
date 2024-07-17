@@ -1,4 +1,4 @@
-from utilities import WindowApp
+from utilities import PrinterApp
 
 from os import getcwd
 from os.path import isfile
@@ -13,7 +13,7 @@ from tkcalendar import DateEntry
 
 # from accessify import private
 
-class DataEditor(WindowApp):
+class DataEditor(PrinterApp):
     # decorator for changes #
     def safecheck(f):
         @wraps(f)
