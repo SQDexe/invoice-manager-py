@@ -1,4 +1,4 @@
-from utilities import WindowApp
+from utilities import PrinterApp
 
 from os import getcwd
 from os.path import isfile
@@ -20,7 +20,7 @@ from tkcalendar import DateEntry
 
 # from accessify import private
 
-class TaxPrinter(WindowApp):
+class TaxPrinter(PrinterApp):
     # decorators #
     def check(f):
         @wraps(f)
