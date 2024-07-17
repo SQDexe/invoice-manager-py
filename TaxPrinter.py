@@ -321,6 +321,7 @@ class TaxPrinter(PrinterApp):
 
         # add, and set variables #
         self.vars.update({
+            'tags': ('b', 'i', 'u', 's'),
             'file': '{}\\{}'.format(getcwd(), 'data.json')
             })
         self.vars['var'].update({
