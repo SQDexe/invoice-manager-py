@@ -303,25 +303,6 @@ class TaxPrinter(PrinterApp):
         except Exception as e:
             self.throw_error(e)
 
-    def show_format(self):
-        msg = (
-            'Formatowanie opisu:\n'
-            '\n'
-            '<b> ... </b> - pogrubienie\n'
-            '<i> ... </i> - kursywa\n'
-            '<u> ... </u> - podkreślenie\n'
-            '<s> ... </s> - przekreślenie\n'
-            '\n'
-            '<t> - podpis projektu (niedostępny)\n'
-            '<p> - nazwa punktu (tylko w szablonie podpunktu)\n'
-            '<o> - treść punktu (tylko w szablonie podpunktu)\n'
-            '\n'
-            '<br> - nowa linia\n'
-            '\n'
-            '{} - niedozwolone znaki nazwy pliku'
-        ).format(' '.join(self.vars['bad-chars']))
-        showinfo(title='Formatowanie', message=msg)
-
     def reload(self):
         # reload data #
         self.clear_data()
