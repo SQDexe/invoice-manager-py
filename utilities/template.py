@@ -153,27 +153,6 @@ class WindowApp(ABC):
     def post(self):
         pass
 
-    def show_help(self):
-        msg = (
-            'Program do drukowania opisów.\n'
-            '\n'
-            '\u2022 Większość elemntów wyświetla opisy po najechaniu.\n'
-            '\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n'
-            '\u2022 Elementy wybieramy na liście, a następnie klikamy\n'
-            'w odpowiedni guzik w celu podjęcia akcji.\n'
-            '\u2022 W nazwach punktów wolno używać jedynie\n'
-            'liczb arabskich, liczb rzymskich oraz kropek\n'
-            '\u2022 Dane podstawowo zapisane są w pliku "data.json",\n'
-            'można je przeładować, bądź wybrać inny plik danych.\n'
-            '\u2022 Aplikacja ma powolny proces uruchamiania\n'
-            'spowodowany trybem kompilacji.\n'
-            '\n'
-            'Python {}\n'
-            'TKinter {}\n'
-            'PyInstaller {}'
-            ).format(self.vars['ver']['py'], self.vars['ver']['tk'], self.vars['ver']['pyinst'])
-        showinfo(title='Pomoc', message=msg)
-
     @abstractmethod
     def close(self):
         pass
@@ -240,3 +219,24 @@ class PrinterApp(WindowApp):
 
         # set new file #
         self.vars['file'] = path
+
+    def show_help(self):
+        msg = (
+            'Program do drukowania opisów.\n'
+            '\n'
+            '\u2022 Większość elemntów wyświetla opisy po najechaniu.\n'
+            '\u2022 Po kolumnach można poruszać się za pomocą strzałek.\n'
+            '\u2022 Elementy wybieramy na liście, a następnie klikamy\n'
+            'w odpowiedni guzik w celu podjęcia akcji.\n'
+            '\u2022 W nazwach punktów wolno używać jedynie\n'
+            'liczb arabskich, liczb rzymskich oraz kropek\n'
+            '\u2022 Dane podstawowo zapisane są w pliku "data.json",\n'
+            'można je przeładować, bądź wybrać inny plik danych.\n'
+            '\u2022 Aplikacja ma powolny proces uruchamiania\n'
+            'spowodowany trybem kompilacji.\n'
+            '\n'
+            'Python {}\n'
+            'TKinter {}\n'
+            'PyInstaller {}'
+            ).format(self.vars['ver']['py'], self.vars['ver']['tk'], self.vars['ver']['pyinst'])
+        showinfo(title='Pomoc', message=msg)
