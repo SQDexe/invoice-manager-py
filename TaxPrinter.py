@@ -15,7 +15,7 @@ from docx.shared import Pt
 from tkinter import StringVar as StrVar, BooleanVar as BoolVar, Text
 from tkinter.ttk import Entry, Button, Treeview, Scrollbar, Checkbutton, Radiobutton
 from tkinter.messagebox import showinfo, askokcancel
-from tkinter.filedialog import askopenfilename, askdirectory
+from tkinter.filedialog import askdirectory
 from tkcalendar import DateEntry
 
 # from accessify import private
@@ -321,20 +321,6 @@ class TaxPrinter(PrinterApp):
             '{} - niedozwolone znaki nazwy pliku'
         ).format(' '.join(self.vars['bad-chars']))
         showinfo(title='Formatowanie', message=msg)
-
-    def select_file(self):
-        # get new path #
-        path = askopenfilename(title='Wybierz plik', initialdir='\\'.join(self.vars['file'].split('\\')[:-1]), filetypes=(('Plik JSON', '.json'), ), multiple=False).replace('/', '\\')
-        if not path:
-            return
-
-        # check if extension correct #
-        if '.json' not in path[-5:]:
-            self.throw_error(4)
-            return
-
-        # set new file #
-        self.vars['file'] = path
 
     def reload(self):
         # reload data #
