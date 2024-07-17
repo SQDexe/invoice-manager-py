@@ -53,7 +53,6 @@ class WindowApp(ABC):
                 },
             'var': {},
             'pad': 5,
-            'tags': ('b', 'i', 'u', 's'),
             'bad-chars': r'\/:*?"<>|',
             'style': Style()
             }
@@ -184,26 +183,6 @@ class WindowApp(ABC):
                 rest = rest - num if 3 * num < rest else rest + num
             return rest
 
-    @staticmethod
-    def get_state(state: bool) -> str:
-        return 'normal' if state else 'disabled'
-
-    @staticmethod
-    def get_date(date: str, dates: list[date] | tuple[date], mode: str='raw') -> str | tuple[date] | tuple[date] | None:
-        # check which timeframe is correct #
-        date, *dates = tuple(WindowApp.str2date(x) for x in (date, *dates))
-        if chosen := tuple((dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]):
-            chosen_data = chosen[0]
-            match mode:
-                case 'string':
-                    return ' - '.join(WindowApp.date2str(x) for x in chosen_data)
-                case 'int':
-                    return tuple((x.day, x.month, x.year) for x in chosen_data)
-                case 'raw' | _:
-                    return chosen_data
-        else:
-            return None
-
 
 class PrinterApp(WindowApp):
     def select_file(self):
@@ -260,3 +239,24 @@ class PrinterApp(WindowApp):
             '{} - niedozwolone znaki nazwy pliku'
         ).format(' '.join(self.vars['bad-chars']))
         showinfo(title='Formatowanie', message=msg)
+
+    # other functions #
+    @staticmethod
+    def get_state(state: bool) -> str:
+        return 'normal' if state else 'disabled'
+
+    @staticmethod
+    def get_date(date: str, dates: list[date] | tuple[date], mode: str='raw') -> str | tuple[date] | tuple[date] | None:
+        # check which timeframe is correct #
+        date, *dates = tuple(WindowApp.str2date(x) for x in (date, *dates))
+        if chosen := tuple((dates[i], dates[i + 1]) for i in range(0, len(dates), 2) if dates[i] <= date <= dates[i + 1]):
+            chosen_data = chosen[0]
+            match mode:
+                case 'string':
+                    return ' - '.join(WindowApp.date2str(x) for x in chosen_data)
+                case 'int':
+                    return tuple((x.day, x.month, x.year) for x in chosen_data)
+                case 'raw' | _:
+                    return chosen_data
+        else:
+            return None
