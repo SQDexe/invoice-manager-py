@@ -1,1 +1,1 @@
-from .template import WindowApp
+from .template import WindowApp, PrinterApp
