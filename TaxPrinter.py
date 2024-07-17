@@ -493,7 +493,7 @@ class TaxPrinter(PrinterApp):
                 },
             'menu-file': {
                 'elements': [
-                    ('command', {'label': 'Wybierz...', 'command': self.select_file}),
+                    ('command', {'label': 'Wybierz\u2026', 'command': self.select_file}),
                     ('command', {'label': 'Przeładuj', 'command': self.reload}),
                     ('separator', None),
                     ('command', {'label': 'Wyjdź', 'command': self.close})
