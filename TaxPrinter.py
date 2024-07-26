@@ -129,7 +129,8 @@ class TaxPrinter(PrinterApp):
             return
 
         # check wherever already not selected #
-        if any(x in tuple(y for y, _ in iids) for x in tuple(self.elem['tree-selected'].item(x, 'values')[2] for x in self.elem['tree-selected'].get_children())):
+        clear_iids = tuple(y for y, _ in iids)
+        if any(x in clear_iids for x in tuple(self.elem['tree-selected'].item(x, 'values')[2] for x in self.elem['tree-selected'].get_children())):
             self.throw_error(602)
             return
 
