@@ -22,10 +22,10 @@ from tkcalendar import DateEntry
 
 class TaxPrinter(PrinterApp):
     # decorators #
-    def check(f):
-        @wraps(f)
+    def check(func):
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
-            f(self)
+            func(self)
 
             childs = bool(self.elem['tree-selected'].get_children())
             self.elem['btn-print'].config(state=self.get_state(childs))
@@ -33,10 +33,10 @@ class TaxPrinter(PrinterApp):
 
         return wrapper
 
-    def sort(f):
-        @wraps(f)
+    def sort(func):
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
-            f(self)
+            func(self)
 
             # sort by point, then by project #
             vals = [(iid, self.elem['tree-selected'].set(iid, 'point'), self.elem['tree-selected'].set(iid, 'project')) for iid in self.elem['tree-selected'].get_children()]
