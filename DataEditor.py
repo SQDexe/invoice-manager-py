@@ -14,10 +14,10 @@ from tkcalendar import DateEntry
 
 class DataEditor(PrinterApp):
     # decorator for changes #
-    def safecheck(f):
-        @wraps(f)
+    def safecheck(func):
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
-            f(self)
+            func(self)
             self.elem['btn-save'].config(state='normal')
             self.vars['unsaved'] = True
         return wrapper
