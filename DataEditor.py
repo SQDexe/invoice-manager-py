@@ -18,8 +18,9 @@ class DataEditor(PrinterApp):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             func(self)
-            self.elem['btn-save'].config(state='normal')
-            self.vars['unsaved'] = True
+            if not self.vars['unsaved']: 
+                self.elem['btn-save'].config(state='normal')
+                self.vars['unsaved'] = True
         return wrapper
 
     def set_data(self):
