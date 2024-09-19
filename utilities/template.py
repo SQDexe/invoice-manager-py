@@ -110,8 +110,8 @@ class WindowApp(ABC):
         self.root.geometry('{}x{}+{}+{}'.format(
           width,
           height,
-          int((self.root.winfo_screenwidth() - width) / 2),
-          int((self.root.winfo_screenheight() - height) / 2)
+          (self.root.winfo_screenwidth() - width) // 2,
+          (self.root.winfo_screenheight() - height) // 2
           ))
         self.root.title(self.vars.title)
         self.root.iconbitmap(executable)
@@ -268,7 +268,6 @@ class PrinterApp(WindowApp):
     def date2str(d: date, /) -> str:
         return d.strftime('%d.%m.%Y')
 
-
     @staticmethod
     @cache
     def roman2int(n: str, /) -> int:
@@ -283,6 +282,7 @@ class PrinterApp(WindowApp):
                 num: int = ROMAN.get(char, 0)
                 rest: int = rest - num if 3 * num < rest else rest + num
             return rest
+        return 0
 
     @staticmethod
     def point2tuple(point: str, /) -> tuple[int, ...]:
@@ -305,8 +305,7 @@ class PrinterApp(WindowApp):
         for beg, end in dates:
             if beg <= d <= end:
                 return beg, end
-        else:
-            return ()
+        return ()
 
     @staticmethod
     def connect_dates(beg: date, end: date, /) -> str:
