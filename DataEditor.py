@@ -52,7 +52,7 @@ class DataEditor(PrinterApp):
         self.elem.tree_dates.delete(*self.elem.tree_dates.get_children())
         self.elem.txt_field.delete('1.0', 'end')
 
-    def points_select(self, event: Event, /) -> None:
+    def points_select(self, event: Event=None, /) -> None:
         iid: str = self.elem.tree_points.focus()
 
         # check wherever iid correct #
@@ -74,7 +74,7 @@ class DataEditor(PrinterApp):
         for beg, end in self.pair_up(dates):
             self.elem.tree_dates.insert('', 'end', values=(beg, end))
 
-    def text_change(self, event: Event, /) -> None:
+    def text_change(self, event: Event=None, /) -> None:
         # check wherever iid correct #
         if not self.elem.tree_points.focus():
             return
@@ -83,7 +83,7 @@ class DataEditor(PrinterApp):
         self.elem.btn_text.config(text='\u2713', state='normal')
 
     @safecheck
-    def save_text(self) -> None:
+    def text_save(self, event: Event=None, /) -> None:
         iid: str = self.elem.tree_points.focus()
 
         # check wherever element is focused #
@@ -117,7 +117,7 @@ class DataEditor(PrinterApp):
 
     @safecheck
     def add_catalogue(self) -> None:
-        name: str = self.vars.var.name.get()
+        name: str = self.vars.var.name.get().strip()
 
         # check if name was given #
         if not name:
@@ -173,7 +173,7 @@ class DataEditor(PrinterApp):
     @safecheck
     def change_item(self) -> None:
         iid: str = self.elem.tree_points.focus()
-        name: str = self.vars.var.name.get()
+        name: str = self.vars.var.name.get().strip()
 
         # check wherever element is focused #
         if not iid:
@@ -196,13 +196,12 @@ class DataEditor(PrinterApp):
             return
 
         # check if name is correct for points #
-        stripped: str = name.strip()
-        if not is_catalogue and not self.vars.patterns.point_name.search(stripped):
+        if not is_catalogue and not self.vars.patterns.point_name.search(name):
             self.throw_error(506)
             return
 
         # set new name #
-        self.elem.tree_points.item(iid, text=name if is_catalogue else stripped)
+        self.elem.tree_points.item(iid, text=name)
 
     @safecheck
     def delete_date(self) -> None:
@@ -258,10 +257,10 @@ class DataEditor(PrinterApp):
             return
 
         # check for other dates #
-        index = 'end'
+        index: str = 'end'
         if childs := self.elem.tree_dates.get_children():
             # check if date not taken #
-            current_dates = tuple(
+            current_dates: tuple[tuple[date, date], ...] = tuple(
               tuple(self.str2date(d) for d in self.elem.tree_dates.item(iid, 'values'))
               for iid in childs
               )
@@ -271,16 +270,16 @@ class DataEditor(PrinterApp):
 
             # get right index #
             if end < current_dates[0][0]:
-                index = 0
+                index = '0'
             elif current_dates[-1][0] < beg:
-                index = len(current_dates)
+                index = str(len(current_dates))
             else:
-                for i, _ in enumerate(current_dates[1:-1], 1):
+                for i in range(1, len(current_dates) - 1):
                     if current_dates[i - 1][1] < beg and end < current_dates[i][0]:
-                        index = i
+                        index = str(i)
 
         # insert in right postion #
-        self.elem.tree_dates.insert('', index, text=self.connect_dates(beg, end), values=(
+        self.elem.tree_dates.insert('', index, values=(
             self.vars.var.date_beg.get(),
             self.vars.var.date_end.get()
             ))
@@ -453,7 +452,7 @@ class DataEditor(PrinterApp):
             },
           btn_text = {
             'type': Button,
-            'args': {'text': '\u166d', 'state': 'disabled', 'command': self.save_text},
+            'args': {'text': '\u166d', 'state': 'disabled', 'command': self.text_save},
             'grid': {'row': 7, 'column': 1},
             'tooltip': 'Zapisz tekst'
             },
@@ -491,7 +490,8 @@ class DataEditor(PrinterApp):
           )
         self.binds.extend([
           ('tree_points', ('<<TreeviewSelect>>', self.points_select)),
-          ('txt_field', ('<Key>', self.text_change))
+          ('txt_field', ('<Key>', self.text_change)),
+          ('txt_field', ('<Control-s>', self.text_save))
           ])
 
     def post(self) -> None:
