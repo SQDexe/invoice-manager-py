@@ -181,7 +181,7 @@ class TaxPrinter(PrinterApp):
 
     @sort
     @check
-    def add_by_btn(self, event: Event, /) -> None:
+    def add_by_btn(self, event: Event=None, /) -> None:
         iid: str = self.elem.tree_all.focus()
 
         # check wherever iid correct #
@@ -223,7 +223,7 @@ class TaxPrinter(PrinterApp):
         self.elem.tree_selected.delete(*self.elem.tree_selected.get_children())
 
     @check
-    def remove_by_btn(self, event: Event, /) -> None:
+    def remove_by_btn(self, event: Event=None, /) -> None:
         iid: str = self.elem.tree_selected.focus()
 
         # check wherever iids correct #
