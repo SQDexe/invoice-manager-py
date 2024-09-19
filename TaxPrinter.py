@@ -16,7 +16,6 @@ from re import compile as recompile
 from functools import wraps
 
 from unidecode import unidecode
-
 from docx import Document
 from docx.shared import Pt
 
@@ -108,8 +107,10 @@ class TaxPrinter(PrinterApp):
             name.append(self.vars.patterns.single_name.sub('', unidecode(project).lower()))
             name.append(''.join(point.split('.')))
 
-            dates: tuple[date, ...] = tuple(self.str2date(d) for d in self.elem.tree_all.item(parent_iid, 'values')[1:])
-            middle_date: date = self.str2date(self.vars.var.date.get())
+            middle_date, *dates = tuple(self.str2date(d) for d in (
+              self.str2date(self.vars.var.date.get()),
+              *self.elem.tree_all.item(parent_iid, 'values')[1:]
+              ))
             if time := self.extract_dates(middle_date, self.pair_up(dates)):
                 start, end = time
                 name.append(
