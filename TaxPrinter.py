@@ -56,19 +56,22 @@ class TaxPrinter(PrinterApp):
             return
 
         # try to read data #
+        data: list[dict[str, Any]] = []
         try:
             with open(self.vars.file, 'rt', encoding='utf-8') as f:
-                data: dict[str, Any] = loads(f.read())
-                for i, project in enumerate(data):
-                    self.elem.tree_all.insert('', 'end', i, text=project['name'], values=(
-                      project['description'],
-                      *self.flatten((dates['from'], dates['to']) for dates in project['dates'])
-                      ), open=False, tags=('catalogue', ))
-                    for point in project['points']:
-                        self.elem.tree_all.insert(i, 'end', text=point['point'], values=(point['text'], ))
+                data.extend(loads(f.read()))
 
         except Exception as e:
-            self.throw_error(e)
+            self.throw_error(-1, str(e))
+
+        else:
+            for i, project in enumerate(data):
+                self.elem.tree_all.insert('', 'end', i, text=project['name'], values=(
+                  project['description'],
+                  *self.flatten((dates['from'], dates['to']) for dates in project['dates'])
+                  ), open=False, tags=('catalogue', ))
+                for point in project['points']:
+                    self.elem.tree_all.insert(i, 'end', text=point['point'], values=(point['text'], ))
 
     @check
     def clear_data(self) -> None:
@@ -310,50 +313,51 @@ class TaxPrinter(PrinterApp):
 
             txt = txt_file.getvalue().replace('<br>', '\n').strip()
         
+        # create file #
+        document: Document = Document()
+
+        # define style #
+        style: ParagraphStyle = document.styles['Normal']
+        style.font.name = 'Calibri'
+        style.font.size = Pt(10)
+
+        # regex matching #
+        tags: list[str] = self.vars.patterns.tags.findall(txt)
+        txt: list[str] = self.vars.patterns.tags.split(txt)
+
+        # write data to docx #
+        par: Paragraph = document.add_paragraph(txt.pop(0), style)
+        for tag, part in zip(tags, txt):
+            run: Run = par.add_run(part)
+
+            # set formatting #
+            match tag:
+                case '<b>':
+                    run.font.bold = True
+                case '</b>':
+                    run.font.bold = False
+                case '<i>':
+                    run.font.italic = True
+                case '</i>':
+                    run.font.italic = False
+                case '<u>':
+                    run.font.underline = True
+                case '</u>':
+                    run.font.underline = False
+                case '<s>':
+                    run.font.strike = True
+                case '</s>':
+                    run.font.strike = False
+
+        # save file #
         try:
-            # create file #
-            document: Document = Document()
-
-            # define style #
-            style: ParagraphStyle = document.styles['Normal']
-            style.font.name = 'Calibri'
-            style.font.size = Pt(10)
-
-            # regex matching #
-            tags: list[str] = self.vars.patterns.tags.findall(txt)
-            txt: list[str] = self.vars.patterns.tags.split(txt)
-
-            # write data to docx #
-            par: Paragraph = document.add_paragraph(txt.pop(0), style)
-            for tag, part in zip(tags, txt):
-                run: Run = par.add_run(part)
-
-                # set formatting #
-                match tag:
-                    case '<b>':
-                        run.font.bold = True
-                    case '</b>':
-                        run.font.bold = False
-                    case '<i>':
-                        run.font.italic = True
-                    case '</i>':
-                        run.font.italic = False
-                    case '<u>':
-                        run.font.underline = True
-                    case '</u>':
-                        run.font.underline = False
-                    case '<s>':
-                        run.font.strike = True
-                    case '</s>':
-                        run.font.strike = False
-
-            # save file #
             document.save(path)
 
-            showinfo(title='Zapisywanie', message='Sukces')
-
         except Exception as e:
-            self.throw_error(e)
+            self.throw_error(-1, str(e))
+
+        else:
+            showinfo(title='Zapisywanie', message='Sukces')
 
     def reload(self) -> None:
         # reload data #
