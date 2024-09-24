@@ -190,10 +190,11 @@ class WindowApp(ABC):
     def close(self) -> None:
         pass
 
-    def throw_error(self, errorCode: int, /) -> None:
-        txt: str = 'Błąd' if self.vars.errors.get(errorCode) else 'Nieznany błąd'
-        msg: str = self.vars.errors.get(errorCode, errorCode)
-        showerror(title=txt, message=msg)
+    def throw_error(self, error_code: int, /, message: str='') -> None:
+        showerror(
+          title='Błąd' if error_code in self.vars.errors else 'Nieznany błąd',
+          message=self.vars.errors.get(error_code, message)
+          )
 
 
 class PrinterApp(WindowApp):
