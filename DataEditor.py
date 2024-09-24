@@ -32,19 +32,22 @@ class DataEditor(PrinterApp):
             return
 
         # try to read data #
+        data: list[dict[str, Any]] = []
         try:
             with open(self.vars.file, 'rt', encoding='utf-8') as f:
-                data: dict[str, Any] = loads(f.read())
-                for i, project in enumerate(data):
-                    self.elem.tree_points.insert('', 'end', i, text=project['name'], values=(
-                      project['description'],
-                      *self.flatten((dates['from'], dates['to']) for dates in project['dates'])
-                      ), open=False, tags=('catalogue', ))
-                    for point in project['points']:
-                        self.elem.tree_points.insert(i, 'end', text=point['point'], values=(point['text'], ))
+                data.extend(loads(f.read()))
 
         except Exception as e:
-            self.throw_error(e)
+            self.throw_error(-1, str(e))
+
+        else:
+            for i, project in enumerate(data):
+                self.elem.tree_points.insert('', 'end', i, text=project['name'], values=(
+                  project['description'],
+                  *self.flatten((dates['from'], dates['to']) for dates in project['dates'])
+                  ), open=False, tags=('catalogue', ))
+                for point in project['points']:
+                    self.elem.tree_points.insert(i, 'end', text=point['point'], values=(point['text'], ))
 
     def clear_data(self) -> None:
         # clear data #
@@ -315,12 +318,14 @@ class DataEditor(PrinterApp):
         try:
             with open(self.vars.file, 'wt', encoding='utf-8') as f:
                 f.write(dumps(self.sort2return(file, key=lambda x: x['name'])))
+
+        except Exception as e:
+            self.throw_error(-1, str(e))
+
+        else:
             showinfo(title='Zapisywanie', message='Sukces')
             self.elem.btn_save.config(state='disabled')
             self.vars.unsaved = False
-
-        except Exception as e:
-            self.throw_error(e)
 
     def reload(self) -> None:
         # check for changes #
