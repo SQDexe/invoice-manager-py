@@ -13,7 +13,7 @@ from functools import cache
 
 from tkinter import Tk, PhotoImage, Menu
 from tkinter.ttk import Style, Frame
-from tkinter.messagebox import showerror, showinfo
+from tkinter.messagebox import showwarning, showerror, showinfo
 from tkinter.filedialog import askopenfilename
 from tktooltip import ToolTip
 
@@ -25,7 +25,7 @@ ROMAN: Final[dict[str, int]] = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D':
 # namespace object for better variable handling #
 class Namespace:
     def __init__(self, other: dict[Hashable, Any]=None, /, **kwargs: Any) -> None:
-        self.update(other, **kwargs)
+        self.update(other | kwargs)
 
     def __getitem__(self, key: Hashable) -> Any:
         return self.__dict__[key]
@@ -190,10 +190,10 @@ class WindowApp(ABC):
         pass
 
     def throw_error(self, error_code: int, /, message: str='') -> None:
-        showerror(
-          title='Błąd' if error_code in self.vars.errors else 'Nieznany błąd',
-          message=self.vars.errors.get(error_code, message)
-          )
+        if error_code in self.vars.errors:
+            showwarning(title='Błąd', message=self.vars.errors[error_code])
+        else:
+            showerror(title='Nieznany błąd', message=message)
 
 
 class PrinterApp(WindowApp):
