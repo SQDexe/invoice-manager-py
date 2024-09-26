@@ -25,7 +25,7 @@ ROMAN: Final[dict[str, int]] = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D':
 # namespace object for better variable handling #
 class Namespace:
     def __init__(self, other: dict[Hashable, Any]=None, /, **kwargs: Any) -> None:
-        self.update(other | kwargs)
+        self.update(other, **kwargs)
 
     def __getitem__(self, key: Hashable) -> Any:
         return self.__dict__[key]
