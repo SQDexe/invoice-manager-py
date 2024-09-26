@@ -63,7 +63,6 @@ class WindowApp(ABC):
             ),
           errors = {
             # 0XX - file errors
-            0: 'Błąd',
             1: 'Brak podstawowego pliku danych',
             2: 'Niedozwolony znak w nazwie pliku',
             3: 'Brak nazwy pliku',
