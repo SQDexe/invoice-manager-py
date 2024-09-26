@@ -62,7 +62,7 @@ class TaxPrinter(PrinterApp):
                 data.extend(loads(f.read()))
 
         except Exception as e:
-            self.throw_error(-1, str(e))
+            self.throw_error(0, str(e))
 
         else:
             for i, project in enumerate(data):
@@ -354,7 +354,7 @@ class TaxPrinter(PrinterApp):
             document.save(path)
 
         except Exception as e:
-            self.throw_error(-1, str(e))
+            self.throw_error(0, str(e))
 
         else:
             showinfo(title='Zapisywanie', message='Sukces')
