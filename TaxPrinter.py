@@ -202,11 +202,11 @@ class TaxPrinter(PrinterApp):
         # add element to table #
         parent_iid: str = self.elem.tree_all.parent(iid)
         self.elem.tree_selected.insert('', 'end', values=(
-                  self.elem.tree_all.item(parent_iid, 'text'),
-                  self.elem.tree_all.item(iid, 'text'),
-                  parent_iid,
-                  iid
-                  ))
+          self.elem.tree_all.item(parent_iid, 'text'),
+          self.elem.tree_all.item(iid, 'text'),
+          parent_iid,
+          iid
+          ))
 
     @check
     def remove(self) -> None:
@@ -390,13 +390,19 @@ class TaxPrinter(PrinterApp):
           addons_text = StrVar(value=' - '),
           cash_mode = StrVar(),
           opening_mode = StrVar(),
-          facture_text = StrVar(value='Akapit przykładowy 1.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu'),
-          contract_text = StrVar(value='Akapit przykładowy 2.\nTutaj wpisać tekst na, który ma pojawić się na początku dokumentu')
+          facture_text = StrVar(value=(
+            'Akapit przykładowy 1.\n'
+            'Tutaj wpisać tekst na, który ma pojawić się na początku dokumentu'
+            )),
+          contract_text = StrVar(value=(
+            'Akapit przykładowy 2.\n'
+            'Tutaj wpisać tekst na, który ma pojawić się na początku dokumentu'
+            ))
           )
         self.vars.patterns.update(
-          single_name=recompile('[^a-z0-9]+'),
-          multi_name=recompile('[^a-z]+'),
-          tags=recompile('</?[{}]>'.format(''.join(self.vars.tags)))
+          single_name=recompile(r'[^a-z0-9]+'),
+          multi_name=recompile(r'[^a-z]+'),
+          tags=recompile(r'</?(?:{})>'.format('|'.join(self.vars.tags)))
           )
         self.elem.update(
           tree_all = {
