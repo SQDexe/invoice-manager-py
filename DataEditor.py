@@ -38,7 +38,7 @@ class DataEditor(PrinterApp):
                 data.extend(loads(f.read()))
 
         except Exception as e:
-            self.throw_error(-1, str(e))
+            self.throw_error(0, str(e))
 
         else:
             for i, project in enumerate(data):
@@ -320,7 +320,7 @@ class DataEditor(PrinterApp):
                 f.write(dumps(self.sort2return(file, key=lambda x: x['name'])))
 
         except Exception as e:
-            self.throw_error(-1, str(e))
+            self.throw_error(0, str(e))
 
         else:
             showinfo(title='Zapisywanie', message='Sukces')
