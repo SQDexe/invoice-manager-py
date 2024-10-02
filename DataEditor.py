@@ -362,7 +362,7 @@ class DataEditor(PrinterApp):
           date_end = StrVar()
           )
         self.vars.patterns.update(
-          point_name=recompile(r'^[\dIVXLCDM]+(\.[\dIVXLCDM]+)*$')
+          point_name = recompile(r'^[\dIVXLCDM]+(\.[\dIVXLCDM]+)*$')
           )
         self.elem.update(
           tree_points = {
