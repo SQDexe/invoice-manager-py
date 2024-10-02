@@ -1,6 +1,5 @@
 from typing import Any
 from datetime import date
-from re import Pattern
 from docx.styles.style import ParagraphStyle
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
@@ -31,9 +30,9 @@ class TaxPrinter(PrinterApp):
         @wraps(func)
         def wrapper(self, *args: Any, **kwargs: Any) -> None:
             func(self, *args, **kwargs)
-            childs: bool = bool(self.elem.tree_selected.get_children())
-            self.elem.btn_print.config(state=self.get_state(childs))
-            self.elem.btn_name.config(state=self.get_state(childs))
+            state: str = self.get_state(self.elem.tree_selected.get_children())
+            self.elem.btn_print.config(state=state)
+            self.elem.btn_name.config(state=state)
         return wrapper
 
     def sort(func: Function) -> Function:
@@ -108,13 +107,13 @@ class TaxPrinter(PrinterApp):
         if len(iids) == 1:
             project, point, parent_iid, _ = self.elem.tree_selected.item(iids[0], 'values')
             name.append(self.vars.patterns.single_name.sub('', unidecode(project).lower()))
-            name.append(''.join(point.split('.')))
+            name.append(point.replace('.', ''))
 
-            middle_date, *dates = tuple(self.str2date(d) for d in (
+            day, *dates = tuple(self.str2date(d) for d in (
               self.str2date(self.vars.var.date.get()),
               *self.elem.tree_all.item(parent_iid, 'values')[1:]
               ))
-            if time := self.extract_dates(middle_date, self.pair_up(dates)):
+            if time := self.extract_dates(day, self.pair_up(dates)):
                 start, end = time
                 name.append(
                     f'{start.day}-{end.day}_{start.month}_{start:%y}' \
@@ -271,8 +270,8 @@ class TaxPrinter(PrinterApp):
 
                 # perpare variables #
                 desc, *str_dates = self.elem.tree_all.item(parent_iid, 'values')
-                middle_date, *dates = tuple(self.str2date(d) for d in (self.vars.var.date.get(), *str_dates))
-                time: tuple[date, date] = self.extract_dates(middle_date, self.pair_up(dates))
+                day, *dates = tuple(self.str2date(d) for d in (self.vars.var.date.get(), *str_dates))
+                time: tuple[date, date] = self.extract_dates(day, self.pair_up(dates))
 
                 # check wherever time was found #
                 if not time:
@@ -400,9 +399,9 @@ class TaxPrinter(PrinterApp):
             ))
           )
         self.vars.patterns.update(
-          single_name=recompile(r'[^a-z0-9]+'),
-          multi_name=recompile(r'[^a-z]+'),
-          tags=recompile(r'</?(?:{})>'.format('|'.join(self.vars.tags)))
+          single_name = recompile(r'[^a-z0-9]+'),
+          multi_name = recompile(r'[^a-z]+'),
+          tags = recompile(r'</?(?:{})>'.format('|'.join(self.vars.tags)))
           )
         self.elem.update(
           tree_all = {
