@@ -1,6 +1,5 @@
 from typing import Any, Final
 from collections.abc import Callable, Hashable, Sequence, Iterable, ItemsView
-from re import Pattern
 from tkinter import Widget
 
 from abc import ABC, abstractmethod
@@ -59,7 +58,7 @@ class WindowApp(ABC):
             pyinst = '6.8.0'
             ),
           patterns = Namespace(
-            json=recompile(r'\.json$')
+            json = recompile(r'\.json$')
             ),
           errors = {
             # 0XX - file errors
@@ -128,7 +127,7 @@ class WindowApp(ABC):
         self.root.mainloop()
 
     def prep_elems(self) -> None:
-        main = 'main'
+        main: Final[str] = 'main'
 
         # mainframe #
         self.elem[main]: Frame = Frame(self.root)
@@ -190,8 +189,8 @@ class WindowApp(ABC):
         pass
 
     def throw_error(self, error_code: int, /, message: str='') -> None:
-        if error_code in self.vars.errors:
-            showwarning(title='Błąd', message=self.vars.errors[error_code])
+        if msg := self.vars.errors.get(error_code):
+            showwarning(title='Błąd', message=msg)
         else:
             showerror(title='Nieznany błąd', message=message)
 
@@ -200,10 +199,10 @@ class PrinterApp(WindowApp):
     def select_file(self) -> None:
         # get new path #
         path: str = normpath(askopenfilename(
-          title='Wybierz plik',
-          initialdir=dirname(self.vars.file),
-          filetypes=(('Plik JSON', '*.json'), ),
-          multiple=False
+          title = 'Wybierz plik',
+          initialdir = dirname(self.vars.file),
+          filetypes = (('Plik JSON', '*.json'), ),
+          multiple = False
           ))
 
         if not path:
@@ -260,21 +259,21 @@ class PrinterApp(WindowApp):
 
     # other functions #
     @staticmethod
-    def str2date(d: str, /) -> date:
-        # date(*tuple(int(x) for x in d.split('.')[::-1]))
-        return datetime.strptime(d, '%d.%m.%Y').date()
+    def str2date(day: str, /) -> date:
+        # date(*tuple(int(x) for x in day.split('.')[::-1]))
+        return datetime.strptime(day, '%d.%m.%Y').date()
 
     @staticmethod
-    def date2str(d: date, /) -> str:
-        return d.strftime('%d.%m.%Y')
+    def date2str(day: date, /) -> str:
+        return day.strftime('%d.%m.%Y')
 
     @staticmethod
     @cache
-    def roman2int(n: str, /) -> int:
+    def roman2int(number: str, /) -> int:
         try:
-            return int(n, base=10)
+            return int(number, base=10)
         except ValueError:
-            str_num: str = n.upper()
+            str_num: str = number.upper()
             if not set(ROMAN.keys()).issuperset(str_num):
                 return 0
             rest: int = 0
@@ -300,10 +299,10 @@ class PrinterApp(WindowApp):
         return 'normal' if state else 'disabled'
 
     @staticmethod
-    def extract_dates(d: date, dates: Sequence[tuple[date, date]], /) -> tuple[date, date]:
+    def extract_dates(day: date, dates: Sequence[tuple[date, date]], /) -> tuple[date, date]:
         # check which timeframe is correct #
         for beg, end in dates:
-            if beg <= d <= end:
+            if beg <= day <= end:
                 return beg, end
         return ()
 
