@@ -329,9 +329,8 @@ class DataEditor(PrinterApp):
 
     def reload(self) -> None:
         # check for changes #
-        if self.vars.unsaved:
-            if not self.ask_changes():
-                return
+        if self.ask_about_changes():
+            return
 
         # reload data #
         self.clear_data()
@@ -339,8 +338,8 @@ class DataEditor(PrinterApp):
         self.elem.btn_save.config(state='disabled')
         self.vars.unsaved = False
 
-    def ask_changes(self) -> bool:
-        return askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
+    def ask_about_changes(self) -> bool:
+        return self.vars.unsaved not askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
 
     # overridden #
     def pre(self) -> None:
@@ -514,10 +513,7 @@ class DataEditor(PrinterApp):
         self.set_data()
 
     def close(self) -> None:
-        if self.vars.unsaved:
-            if self.ask_changes():
-                self.root.destroy() 
-        else:
+        if not self.ask_about_changes():
             self.root.destroy()
 
 
