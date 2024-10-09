@@ -299,12 +299,12 @@ class PrinterApp(WindowApp):
         return 'normal' if state else 'disabled'
 
     @staticmethod
-    def extract_dates(day: date, dates: Sequence[tuple[date, date]], /) -> tuple[date, date]:
+    def extract_dates(day: date, dates: Sequence[tuple[date, date]], /) -> tuple[date, date] | None:
         # check which timeframe is correct #
         for beg, end in dates:
             if beg <= day <= end:
                 return beg, end
-        return ()
+        return None
 
     @staticmethod
     def connect_dates(beg: date, end: date, /) -> str:
