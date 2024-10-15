@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from tkinter import Event
 
 from utilities import PrinterApp, Function, MIN_DATE
@@ -55,7 +55,7 @@ class DataEditor(PrinterApp):
         self.elem.tree_dates.delete(*self.elem.tree_dates.get_children())
         self.elem.txt_field.delete('1.0', 'end')
 
-    def points_select(self, event: Event=None, /) -> None:
+    def points_select(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_points.focus()
 
         # check wherever iid correct #
@@ -77,7 +77,7 @@ class DataEditor(PrinterApp):
         for beg, end in self.pair_up(dates):
             self.elem.tree_dates.insert('', 'end', values=(beg, end))
 
-    def text_change(self, event: Event=None, /) -> None:
+    def text_change(self, event: Optional[Event]=None, /) -> None:
         # check wherever iid correct #
         if not self.elem.tree_points.focus():
             return
@@ -86,7 +86,7 @@ class DataEditor(PrinterApp):
         self.elem.btn_text.config(text='\u2713', state='normal')
 
     @safecheck
-    def text_save(self, event: Event=None, /) -> None:
+    def text_save(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_points.focus()
 
         # check wherever element is focused #
