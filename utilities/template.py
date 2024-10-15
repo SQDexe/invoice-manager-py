@@ -1,4 +1,4 @@
-from typing import Any, Final
+from typing import Any, Final, Optional
 from collections.abc import Callable, Hashable, Sequence, Iterable, ItemsView
 from tkinter import Widget
 
@@ -299,7 +299,7 @@ class PrinterApp(WindowApp):
         return 'normal' if state else 'disabled'
 
     @staticmethod
-    def extract_dates(day: date, dates: Sequence[tuple[date, date]], /) -> tuple[date, date] | None:
+    def extract_dates(day: date, dates: Sequence[tuple[date, date]], /) -> Optional[tuple[date, date]]:
         # check which timeframe is correct #
         for beg, end in dates:
             if beg <= day <= end:
@@ -312,6 +312,8 @@ class PrinterApp(WindowApp):
 
     @staticmethod
     def pair_up[T](seq: Sequence[T], /) -> tuple[tuple[T, T], ...]:
+        if not (isinstance(seq, list) or isinstance(seq, tuple)):
+            seq = tuple(seq)
         return tuple(zip(seq[::2], seq[1::2]))
 
     @staticmethod
