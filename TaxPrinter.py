@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any. Optional
 from datetime import date
 from docx.styles.style import ParagraphStyle
 from docx.text.paragraph import Paragraph
@@ -97,24 +97,43 @@ class TaxPrinter(PrinterApp):
 
     def make_name(self) -> None:
         # get values #
-        iids: tuple[str, ...] = self.elem.tree_selected.get_children()
         name: list[str] = []
+        values: tuple[tuple[str, str, str], ...] = tuple(
+          self.elem.tree_selected.item(iid, 'values')[:3]
+          for iid in self.elem.tree_selected.get_children()
+          )
 
         # make new filename #
         if self.vars.var.opening_mode.get() == 'contract_text':
             name.append('u')
 
-        if len(iids) == 1:
-            project, point, parent_iid, _ = self.elem.tree_selected.item(iids[0], 'values')
+        # for single point #
+        if len(values) == 1:
+            project, point, _ = values[0]
             name.append(self.vars.patterns.single_name.sub('', unidecode(project).lower()))
             name.append(point.replace('.', ''))
 
-            day, *dates = tuple(self.str2date(d) for d in (
-              self.str2date(self.vars.var.date.get()),
-              *self.elem.tree_all.item(parent_iid, 'values')[1:]
-              ))
-            if time := self.extract_dates(day, self.pair_up(dates)):
-                start, end = time
+        # for mutiple points #
+        else:
+            name.extend(self.sort2return({
+              self.vars.patterns.multi_name.sub('', unidecode(project).lower())
+              for project, *_ in values
+              }))
+
+        # extract dates #
+        day: date = self.str2date(self.vars.var.date.get())
+        dates: tuple[tuple[date, date], ...] = tuple(
+          self.extract_dates(day, self.pair_up(
+            self.str2date(d)
+            for d in self.elem.tree_all.item(project_iid, 'values')[1:]
+            ))
+          for *_, project_iid in values
+          ))
+
+        # find edge dates #
+        if all(dates):
+            start, end = max(s for s, _ in dates), min(e for _, e in dates)
+            if start <= end:
                 name.append(
                     f'{start.day}-{end.day}_{start.month}_{start:%y}' \
                     if start.month == end.month else \
@@ -122,12 +141,6 @@ class TaxPrinter(PrinterApp):
                   if start.year == end.year else \
                   f'{start.month}_{start:%y}-{end.month}_{end:%y}'
                   )
-
-        else:
-            name.extend(self.sort2return({
-              self.vars.patterns.multi_name.sub('', unidecode(self.elem.tree_selected.item(iid, 'values')[0]).lower())
-              for iid in iids
-              }))
 
         # set the filename #
         self.vars.var.filename.set('_'.join(name))
@@ -183,7 +196,7 @@ class TaxPrinter(PrinterApp):
 
     @sort
     @check
-    def add_by_btn(self, event: Event=None, /) -> None:
+    def add_by_btn(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_all.focus()
 
         # check wherever iid correct #
@@ -225,7 +238,7 @@ class TaxPrinter(PrinterApp):
         self.elem.tree_selected.delete(*self.elem.tree_selected.get_children())
 
     @check
-    def remove_by_btn(self, event: Event=None, /) -> None:
+    def remove_by_btn(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_selected.focus()
 
         # check wherever iids correct #
