@@ -311,6 +311,16 @@ class PrinterApp(WindowApp):
         return ' - '.join(PrinterApp.date2str(d) for d in (beg, end))
 
     @staticmethod
+    def self.get_timespan_desc(beg: date, end: date, /):
+        if beg.year != end.year:
+            return f'{beg.month}_{beg:%y}-{end.month}_{end:%y}'
+        if beg.month != end.month:
+            return f'{beg.month}-{end.month}_{beg:%y}'
+        if beg.day != end.day:
+            return f'{beg.day}-{end.day}_{beg.month}_{beg:%y}'
+        return f'{beg.day}_{beg.month}_{beg:%y}'
+
+    @staticmethod
     def pair_up[T](seq: Sequence[T], /) -> tuple[tuple[T, T], ...]:
         if not (isinstance(seq, list) or isinstance(seq, tuple)):
             seq = tuple(seq)
