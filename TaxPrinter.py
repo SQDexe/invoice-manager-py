@@ -122,7 +122,7 @@ class TaxPrinter(PrinterApp):
 
         # extract dates #
         day: date = self.str2date(self.vars.var.date.get())
-        dates: tuple[tuple[date, date], ...] = tuple(
+        dates: tuple[Optional[tuple[date, date]], ...] = tuple(
           self.extract_dates(day, self.pair_up(
             self.str2date(d)
             for d in self.elem.tree_all.item(project_iid, 'values')[1:]
@@ -132,15 +132,10 @@ class TaxPrinter(PrinterApp):
 
         # find edge dates #
         if all(dates):
-            start, end = max(s for s, _ in dates), min(e for _, e in dates)
+            starts, ends = zip(*dates)
+            start, end = max(starts), min(ends)
             if start <= end:
-                name.append(
-                    f'{start.day}-{end.day}_{start.month}_{start:%y}' \
-                    if start.month == end.month else \
-                    f'{start.month}-{end.month}_{start:%y}' \
-                  if start.year == end.year else \
-                  f'{start.month}_{start:%y}-{end.month}_{end:%y}'
-                  )
+                name.append(self.get_timespan_desc(start, end))
 
         # set the filename #
         self.vars.var.filename.set('_'.join(name))
