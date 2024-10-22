@@ -34,8 +34,8 @@ class DataEditor(PrinterApp):
         # try to read data #
         data: list[dict[str, Any]] = []
         try:
-            with open(self.vars.file, 'rt', encoding='utf-8') as f:
-                data.extend(loads(f.read()))
+            with open(self.vars.file, 'rt', encoding='utf-8') as file:
+                data.extend(loads(file.read()))
 
         except Exception as e:
             self.throw_error(0, str(e))
@@ -58,7 +58,7 @@ class DataEditor(PrinterApp):
     def points_select(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_points.focus()
 
-        # check wherever iid correct #
+        # check whether iid correct #
         if not iid:
             return
 
@@ -78,7 +78,7 @@ class DataEditor(PrinterApp):
             self.elem.tree_dates.insert('', 'end', values=(beg, end))
 
     def text_change(self, event: Optional[Event]=None, /) -> None:
-        # check wherever iid correct #
+        # check whether iid correct #
         if not self.elem.tree_points.focus():
             return
 
@@ -89,7 +89,7 @@ class DataEditor(PrinterApp):
     def text_save(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_points.focus()
 
-        # check wherever element is focused #
+        # check whether element is focused #
         if not iid:
             self.throw_error(201)
             return
@@ -106,7 +106,7 @@ class DataEditor(PrinterApp):
     def delete_item(self) -> None:
         iid: str = self.elem.tree_points.focus()
 
-        # check wherever element is focused #
+        # check whether element is focused #
         if not iid:
             self.throw_error(201)
             return
@@ -143,7 +143,7 @@ class DataEditor(PrinterApp):
         name: str = self.vars.var.name.get().strip()
         index: str = 'end'
 
-        # check wherever element is focused #
+        # check whether element is focused #
         if not iid:
             self.throw_error(201)
             return
@@ -178,7 +178,7 @@ class DataEditor(PrinterApp):
         iid: str = self.elem.tree_points.focus()
         name: str = self.vars.var.name.get().strip()
 
-        # check wherever element is focused #
+        # check whether element is focused #
         if not iid:
             self.throw_error(201)
             return
@@ -210,7 +210,7 @@ class DataEditor(PrinterApp):
     def delete_date(self) -> None:
         iid: str = self.elem.tree_dates.focus()
 
-        # check wherever element is focused #
+        # check whether element is focused #
         if not iid:
             self.throw_error(201)
             return
@@ -218,7 +218,7 @@ class DataEditor(PrinterApp):
         # get parent #
         parent_iid: str = self.elem.tree_points.focus()
 
-        # check wherever element is focused #
+        # check whether element is focused #
         if not parent_iid:
             self.throw_error(201)
             return
@@ -244,7 +244,7 @@ class DataEditor(PrinterApp):
         # get parent #
         parent_iid: str = self.elem.tree_points.focus()
 
-        # check wherever element is focused #
+        # check whether element is focused #
         if not parent_iid:
             self.throw_error(201)
             return
@@ -296,7 +296,7 @@ class DataEditor(PrinterApp):
         self.elem.tree_points.item(parent_iid, values=(desc, *new_dates))
 
     def save_file(self) -> None:
-        file: list[dict[str, Any]] = []
+        data: list[dict[str, Any]] = []
 
         # get iterable values, and make obj #
         for project in self.elem.tree_points.get_children():
@@ -307,7 +307,7 @@ class DataEditor(PrinterApp):
               {'point': self.elem.tree_points.item(item, 'text'), 'text': self.elem.tree_points.item(item, 'values')[0]}
               for item in self.elem.tree_points.get_children(project)
               ]
-            file.append({
+            data.append({
               'name': name,
               'description': desc,
               'dates': dict_dates,
@@ -316,8 +316,8 @@ class DataEditor(PrinterApp):
 
         # try to save file #
         try:
-            with open(self.vars.file, 'wt', encoding='utf-8') as f:
-                f.write(dumps(self.sort2return(file, key=lambda x: x['name'])))
+            with open(self.vars.file, 'wt', encoding='utf-8') as file:
+                file.write(dumps(self.sort2return(data, key=lambda x: x['name'])))
 
         except Exception as e:
             self.throw_error(0, str(e))
