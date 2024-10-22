@@ -57,8 +57,8 @@ class TaxPrinter(PrinterApp):
         # try to read data #
         data: list[dict[str, Any]] = []
         try:
-            with open(self.vars.file, 'rt', encoding='utf-8') as f:
-                data.extend(loads(f.read()))
+            with open(self.vars.file, 'rt', encoding='utf-8') as file:
+                data.extend(loads(file.read()))
 
         except Exception as e:
             self.throw_error(0, str(e))
@@ -150,12 +150,12 @@ class TaxPrinter(PrinterApp):
           if not self.elem.tree_all.tag_has('catalogue', iid)
           )
 
-        # check wherever iids correct #
+        # check whether iids correct #
         if not iids:
             self.throw_error(201)
             return
 
-        # check wherever already not selected #
+        # check whether already not selected #
         clear_iids: tuple[str, ...] = tuple(iid for iid, _ in iids)
         if any(iid in clear_iids for iid in tuple(
           self.elem.tree_selected.item(child, 'values')[3]
@@ -194,15 +194,15 @@ class TaxPrinter(PrinterApp):
     def add_by_btn(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_all.focus()
 
-        # check wherever iid correct #
+        # check whether iid correct #
         if not iid:
             return
 
-        # check wherever catalogue was selected #
+        # check whether catalogue was selected #
         if self.elem.tree_all.tag_has('catalogue', iid):
             return
 
-        # check wherever already not selected #
+        # check whether already not selected #
         if iid in tuple(self.elem.tree_selected.item(x, 'values')[3] for x in self.elem.tree_selected.get_children()):
             return
 
@@ -219,7 +219,7 @@ class TaxPrinter(PrinterApp):
     def remove(self) -> None:
         iids: list[str] = self.elem.tree_selected.selection()
 
-        # check wherever iids correct #
+        # check whether iids correct #
         if not iids:
             self.throw_error(201)
             return
@@ -236,7 +236,7 @@ class TaxPrinter(PrinterApp):
     def remove_by_btn(self, event: Optional[Event]=None, /) -> None:
         iid: str = self.elem.tree_selected.focus()
 
-        # check wherever iids correct #
+        # check whether iids correct #
         if not iid:
             return
 
@@ -258,7 +258,7 @@ class TaxPrinter(PrinterApp):
 
         path: str = join(self.vars.var.filepath.get(), f'{name}.docx')
 
-        # check wherever file exists #
+        # check whether file exists #
         if isfile(path):
             if not askokcancel(title='Plik już istnieje', message='Czy chcesz kontynuować?'):
                 self.throw_error(5)
@@ -281,7 +281,7 @@ class TaxPrinter(PrinterApp):
                 day, *dates = tuple(self.str2date(d) for d in (self.vars.var.date.get(), *str_dates))
                 time: tuple[date, date] = self.extract_dates(day, self.pair_up(dates))
 
-                # check wherever time was found #
+                # check whether time was found #
                 if not time:
                     self.throw_error(603)
                     return
