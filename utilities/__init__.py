@@ -1,1 +1,1 @@
-from .template import WindowApp, PrinterApp, Function, MIN_DATE
+from .template import PrinterApp, Function, Slice, MIN_DATE, BAD_CHARS
