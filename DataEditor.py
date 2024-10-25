@@ -1,7 +1,7 @@
 from typing import Any, Optional
 from tkinter import Event
 
-from utilities import PrinterApp, Function, MIN_DATE
+from utilities import PrinterApp, Function, Slice, MIN_DATE
 
 from os import getcwd
 from os.path import isfile, join
@@ -72,7 +72,7 @@ class DataEditor(PrinterApp):
             iid = self.elem.tree_points.parent(iid)
 
         # set dates #   
-        dates: tuple[str, ...] = self.elem.tree_points.item(iid, 'values')[1:]
+        dates: tuple[str, ...] = self.elem.tree_points.item(iid, 'values')[Slice.ALL_BUT_FIRST]
         self.elem.tree_dates.delete(*self.elem.tree_dates.get_children())
         for beg, end in self.pair_up(dates):
             self.elem.tree_dates.insert('', 'end', values=(beg, end))
@@ -96,7 +96,7 @@ class DataEditor(PrinterApp):
 
         # assign text #
         text: str = self.elem.txt_field.get('1.0', 'end-1c').strip()
-        dates: tuple[str, ...] = self.elem.tree_points.item(iid, 'values')[1:]
+        dates: tuple[str, ...] = self.elem.tree_points.item(iid, 'values')[Slice.ALL_BUT_FIRST]
         self.elem.tree_points.item(iid, values=(text, *dates))
 
         # set button #
