@@ -2,6 +2,7 @@ from typing import Any, Final, Optional
 from collections.abc import Callable, Hashable, Sequence, Iterable, ItemsView
 from tkinter import Widget
 
+from enum import EnumType
 from abc import ABC, abstractmethod
 
 from sys import version_info, executable
@@ -19,7 +20,14 @@ from tktooltip import ToolTip
 type Function = Callable[[...], Any]
 
 MIN_DATE: Final[date] = date(1900, 1, 1)
+BAD_CHARS: Final[str] = r'\/:*?"<>|'
 ROMAN: Final[dict[str, int]] = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+
+class Slice(EnumType):
+    REVERSED: slice = slice(None, None, -1)
+    ALL_BUT_FIRST: slice = slice(1, None)
+    EVEN: slice = slice(None, None, 2)
+    ODD: slice = slice(1, None, 2)
 
 # namespace object for better variable handling #
 class Namespace:
@@ -40,7 +48,7 @@ class Namespace:
             other = {}
         self.__dict__.update(other | kwargs)
 
-class WindowApp(ABC):
+class PrinterApp(ABC):
     def __init__(self) -> None:
         # root declaration #
         self.root: Tk = Tk()
@@ -85,7 +93,6 @@ class WindowApp(ABC):
             },
           var = Namespace(),
           pad = 5,
-          bad_chars = r'\/:*?"<>|',
           style = Style()
           )
         self.elem: Namespace = Namespace()
@@ -194,8 +201,6 @@ class WindowApp(ABC):
         else:
             showerror(title='Nieznany błąd', message=message)
 
-
-class PrinterApp(WindowApp):
     def select_file(self) -> None:
         # get new path #
         path: str = normpath(askopenfilename(
@@ -254,13 +259,13 @@ class PrinterApp(WindowApp):
           '<br> - nowa linia\n'
           '\n'
           '{} - niedozwolone znaki nazwy pliku'
-          ).format(' '.join(self.vars.bad_chars))
+          ).format(' '.join(BAD_CHARS))
         showinfo(title='Formatowanie', message=msg)
 
     # other functions #
     @staticmethod
     def str2date(day: str, /) -> date:
-        # date(*tuple(int(x) for x in day.split('.')[::-1]))
+        # date(*tuple(int(x) for x in day.split('.')[Slice.REVERSED]))
         return datetime.strptime(day, '%d.%m.%Y').date()
 
     @staticmethod
@@ -324,7 +329,7 @@ class PrinterApp(WindowApp):
     def pair_up[T](seq: Sequence[T], /) -> tuple[tuple[T, T], ...]:
         if not (isinstance(seq, list) or isinstance(seq, tuple)):
             seq = tuple(seq)
-        return tuple(zip(seq[::2], seq[1::2]))
+        return tuple(zip(seq[Slice.EVEN], seq[Slice.ODD]))
 
     @staticmethod
     def flatten[T](seq: Sequence[tuple[T, ...]], /) -> tuple[T, ...]:
