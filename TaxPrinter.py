@@ -5,7 +5,7 @@ from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 from tkinter import Event
 
-from utilities import PrinterApp, Function, MIN_DATE
+from utilities import PrinterApp, Function, Slice, MIN_DATE, BAD_CHARS
 
 from os import getcwd
 from os.path import isfile, join
@@ -125,7 +125,7 @@ class TaxPrinter(PrinterApp):
         dates: tuple[Optional[tuple[date, date]], ...] = tuple(
           self.extract_dates(day, self.pair_up(
             self.str2date(d)
-            for d in self.elem.tree_all.item(project_iid, 'values')[1:]
+            for d in self.elem.tree_all.item(project_iid, 'values')[Slice.ALL_BUT_FIRST]
             ))
           for *_, project_iid in values
           ))
@@ -252,7 +252,7 @@ class TaxPrinter(PrinterApp):
             return
 
         # check if filename correct #
-        if any(char in name for char in self.vars.bad_chars):
+        if any(char in name for char in BAD_CHARS):
             self.throw_error(2)
             return
 
@@ -272,7 +272,7 @@ class TaxPrinter(PrinterApp):
 
             items: tuple[str, ...] = self.elem.tree_selected.get_children()
             for project, parent_iid in self.sort2return({
-              self.elem.tree_selected.item(iid, 'values')[::2]
+              self.elem.tree_selected.item(iid, 'values')[Slice.EVEN]
               for iid in items
               }, key=lambda x: x[0]):
 
@@ -292,7 +292,7 @@ class TaxPrinter(PrinterApp):
 
                 # get data for point, and write them #
                 collected_points: tuple[tuple[str, str], ...] = tuple(
-                  self.elem.tree_selected.item(iid, 'values')[1::2]
+                  self.elem.tree_selected.item(iid, 'values')[Slice.ODD]
                   for iid in items
                   if self.elem.tree_selected.set(iid, 'project') == project
                   )
