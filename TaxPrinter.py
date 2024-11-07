@@ -25,6 +25,9 @@ from tkinter.filedialog import askdirectory
 from tkcalendar import DateEntry
 
 class TaxPrinter(PrinterApp):
+    # attributes redeclaration #
+    __slots__: tuple[...] = ()
+
     # decorators #
     def check(func: Function) -> Function:
         @wraps(func)
