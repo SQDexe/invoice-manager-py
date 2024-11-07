@@ -15,6 +15,9 @@ from tkinter.messagebox import showinfo, askokcancel
 from tkcalendar import DateEntry
 
 class DataEditor(PrinterApp):
+    # attributes redeclaration #
+    __slots__: tuple[...] = ()
+    
     # decorator for changes #
     def safecheck(func: Function) -> Function:
         @wraps(func)
