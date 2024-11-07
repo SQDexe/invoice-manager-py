@@ -49,6 +49,9 @@ class Namespace:
         self.__dict__.update(other | kwargs)
 
 class PrinterApp(ABC):
+    # attributes declaration #
+    __slots__: tuple[str, ...] = ('root', 'vars', 'elem', 'tips', 'grid', 'menus', 'binds')
+    
     def __init__(self) -> None:
         # root declaration #
         self.root: Tk = Tk()
@@ -96,7 +99,7 @@ class PrinterApp(ABC):
           style = Style()
           )
         self.elem: Namespace = Namespace()
-        self.tooltips: list[ToolTip] = []
+        self.tips: list[ToolTip] = []
         self.grid: Namespace = Namespace(
           row = {'default': {'weight': 1, 'minsize': 40} },
           col = {'default': {'weight': 1, 'minsize': 50} }    
@@ -155,7 +158,7 @@ class PrinterApp(ABC):
             if border := data.get('borderfull'):
                 self.elem[key].config(**border)
             if text := data.get('tooltip'):
-                self.tooltips.append(ToolTip(self.elem[key], msg=text, delay=0.25))
+                self.tips.append(ToolTip(self.elem[key], msg=text, delay=0.25))
 
         # grid settings #
         cols, rows = self.elem[main].grid_size()
