@@ -1,11 +1,13 @@
-from typing import Any. Optional
+from typing import Any, Optional
 from datetime import date
 from docx.styles.style import ParagraphStyle
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 from tkinter import Event
 
-from utilities import PrinterApp, Function, Slice, MIN_DATE, BAD_CHARS
+from utils import PrinterApp, Function
+from utils.consts import BAD_CHARS, MIN_DATE, Slice
+from utils.funcs import connect_dates, extract_dates, flatten, get_state, get_timespan_desc, pair_up, point2tuple, replace_mutiple, sort2return, str2date
 
 from os import getcwd
 from os.path import isfile, join
@@ -26,14 +28,14 @@ from tkcalendar import DateEntry
 
 class TaxPrinter(PrinterApp):
     # attributes redeclaration #
-    __slots__: tuple[...] = ()
+    __slots__: tuple[()] = ()
 
     # decorators #
     def check(func: Function) -> Function:
         @wraps(func)
         def wrapper(self, *args: Any, **kwargs: Any) -> None:
             func(self, *args, **kwargs)
-            state: str = self.get_state(self.elem.tree_selected.get_children())
+            state: str = get_state(self.elem.tree_selected.get_children())
             self.elem.btn_print.config(state=state)
             self.elem.btn_name.config(state=state)
         return wrapper
@@ -47,7 +49,7 @@ class TaxPrinter(PrinterApp):
               (iid, self.elem.tree_selected.set(iid, 'point'), self.elem.tree_selected.set(iid, 'project'))
               for iid in self.elem.tree_selected.get_children()
               ]
-            for i, (iid, *_) in enumerate(self.sort2return(vals, key=lambda x: (x[2], self.point2tuple(x[1]), x[0]))):
+            for i, (iid, *_) in enumerate(sort2return(vals, key=lambda x: (x[2], point2tuple(x[1]), x[0]))):
                 self.elem.tree_selected.move(iid, '', i)
         return wrapper
 
@@ -70,7 +72,7 @@ class TaxPrinter(PrinterApp):
             for i, project in enumerate(data):
                 self.elem.tree_all.insert('', 'end', i, text=project['name'], values=(
                   project['description'],
-                  *self.flatten((dates['from'], dates['to']) for dates in project['dates'])
+                  *flatten((dates['from'], dates['to']) for dates in project['dates'])
                   ), open=False, tags=('catalogue', ))
                 for point in project['points']:
                     self.elem.tree_all.insert(i, 'end', text=point['point'], values=(point['text'], ))
@@ -83,7 +85,7 @@ class TaxPrinter(PrinterApp):
 
     def toggle(self) -> None:
         states: tuple[str, str] = self.vars.var.cash.get(), self.vars.var.addons.get()
-        cash_state, addons_state = tuple(self.get_state(x) for x in states)
+        cash_state, addons_state = tuple(get_state(x) for x in states)
         self.elem.entry_cash.config(state=cash_state)
         self.elem.radbtn_auto.config(state=cash_state)
         self.elem.radbtn_all.config(state=cash_state)
@@ -118,27 +120,27 @@ class TaxPrinter(PrinterApp):
 
         # for mutiple points #
         else:
-            name.extend(self.sort2return({
+            name.extend(sort2return({
               self.vars.patterns.multi_name.sub('', unidecode(project).lower())
               for project, *_ in values
               }))
 
         # extract dates #
-        day: date = self.str2date(self.vars.var.date.get())
+        day: date = str2date(self.vars.var.date.get())
         dates: tuple[Optional[tuple[date, date]], ...] = tuple(
-          self.extract_dates(day, self.pair_up(
-            self.str2date(d)
+          extract_dates(day, pair_up(
+            str2date(d)
             for d in self.elem.tree_all.item(project_iid, 'values')[Slice.ALL_BUT_FIRST]
             ))
           for *_, project_iid in values
-          ))
+          )
 
         # find edge dates #
         if all(dates):
             starts, ends = zip(*dates)
             start, end = max(starts), min(ends)
             if start <= end:
-                name.append(self.get_timespan_desc(start, end))
+                name.append(get_timespan_desc(start, end))
 
         # set the filename #
         self.vars.var.filename.set('_'.join(name))
@@ -274,15 +276,15 @@ class TaxPrinter(PrinterApp):
                 txt_file.write(beg + '<br><br>')
 
             items: tuple[str, ...] = self.elem.tree_selected.get_children()
-            for project, parent_iid in self.sort2return({
+            for project, parent_iid in sort2return({
               self.elem.tree_selected.item(iid, 'values')[Slice.EVEN]
               for iid in items
               }, key=lambda x: x[0]):
 
                 # perpare variables #
                 desc, *str_dates = self.elem.tree_all.item(parent_iid, 'values')
-                day, *dates = tuple(self.str2date(d) for d in (self.vars.var.date.get(), *str_dates))
-                time: tuple[date, date] = self.extract_dates(day, self.pair_up(dates))
+                day, *dates = tuple(str2date(d) for d in (self.vars.var.date.get(), *str_dates))
+                time: tuple[date, date] = extract_dates(day, pair_up(dates))
 
                 # check whether time was found #
                 if not time:
@@ -291,7 +293,7 @@ class TaxPrinter(PrinterApp):
 
                 # write text #
                 txt_file.write(self.vars.var.title_text.get().strip().replace('<t>', project) + '<br>')
-                txt_file.write(desc.replace('<d>', self.connect_dates(*time)) + '<br>')
+                txt_file.write(desc.replace('<d>', connect_dates(*time)) + '<br>')
 
                 # get data for point, and write them #
                 collected_points: tuple[tuple[str, str], ...] = tuple(
@@ -310,7 +312,7 @@ class TaxPrinter(PrinterApp):
                     if self.vars.var.cash.get() and print_cash:
                         txt_file.write(self.vars.var.cash_text.get())
 
-                    txt_file.write(self.replace_mutiple(self.vars.var.point_text.get(), {
+                    txt_file.write(replace_mutiple(self.vars.var.point_text.get(), {
                       '<p>': point,
                       '<o>': self.elem.tree_all.item(iid, 'values')[0]
                       }))

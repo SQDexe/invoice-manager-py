@@ -1,7 +1,9 @@
 from typing import Any, Optional
 from tkinter import Event
 
-from utilities import PrinterApp, Function, Slice, MIN_DATE
+from utils import PrinterApp, Function
+from utils.consts import MIN_DATE, Slice
+from utils.funcs import flatten, pair_up, point2tuple, sort2return
 
 from os import getcwd
 from os.path import isfile, join
@@ -16,7 +18,7 @@ from tkcalendar import DateEntry
 
 class DataEditor(PrinterApp):
     # attributes redeclaration #
-    __slots__: tuple[...] = ()
+    __slots__: tuple[()] = ()
     
     # decorator for changes #
     def safecheck(func: Function) -> Function:
@@ -47,7 +49,7 @@ class DataEditor(PrinterApp):
             for i, project in enumerate(data):
                 self.elem.tree_points.insert('', 'end', i, text=project['name'], values=(
                   project['description'],
-                  *self.flatten((dates['from'], dates['to']) for dates in project['dates'])
+                  *flatten((dates['from'], dates['to']) for dates in project['dates'])
                   ), open=False, tags=('catalogue', ))
                 for point in project['points']:
                     self.elem.tree_points.insert(i, 'end', text=point['point'], values=(point['text'], ))
@@ -77,7 +79,7 @@ class DataEditor(PrinterApp):
         # set dates #   
         dates: tuple[str, ...] = self.elem.tree_points.item(iid, 'values')[Slice.ALL_BUT_FIRST]
         self.elem.tree_dates.delete(*self.elem.tree_dates.get_children())
-        for beg, end in self.pair_up(dates):
+        for beg, end in pair_up(dates):
             self.elem.tree_dates.insert('', 'end', values=(beg, end))
 
     def text_change(self, event: Optional[Event]=None, /) -> None:
@@ -232,7 +234,7 @@ class DataEditor(PrinterApp):
 
         # update values #
         desc: str = self.elem.tree_points.item(parent_iid, 'values')[0]
-        dates: tuple[str, ...] = self.flatten(
+        dates: tuple[str, ...] = flatten(
           self.elem.tree_dates.item(child, 'values')
           for child in self.elem.tree_dates.get_children()
           if child != iid
@@ -292,7 +294,7 @@ class DataEditor(PrinterApp):
 
         # update values #
         desc: str = self.elem.tree_points.item(parent_iid, 'values')[0]
-        new_dates: tuple[str, ...] = self.flatten(
+        new_dates: tuple[str, ...] = flatten(
           self.elem.tree_dates.item(child, 'values')
           for child in self.elem.tree_dates.get_children()
           )
@@ -305,7 +307,7 @@ class DataEditor(PrinterApp):
         for project in self.elem.tree_points.get_children():
             name: str = self.elem.tree_points.item(project, 'text')
             desc, *dates = self.elem.tree_points.item(project, 'values')
-            dict_dates: list[dict[str, str]] = [{'from': beg, 'to': end} for beg, end in self.pair_up(dates)]
+            dict_dates: list[dict[str, str]] = [{'from': beg, 'to': end} for beg, end in pair_up(dates)]
             points: list[dict[str, Any]] = [
               {'point': self.elem.tree_points.item(item, 'text'), 'text': self.elem.tree_points.item(item, 'values')[0]}
               for item in self.elem.tree_points.get_children(project)
@@ -314,13 +316,13 @@ class DataEditor(PrinterApp):
               'name': name,
               'description': desc,
               'dates': dict_dates,
-              'points': self.sort2return(points, key=lambda x: self.point2tuple(x['point']))
+              'points': sort2return(points, key=lambda x: point2tuple(x['point']))
               })
 
         # try to save file #
         try:
             with open(self.vars.file, 'wt', encoding='utf-8') as file:
-                file.write(dumps(self.sort2return(data, key=lambda x: x['name'])))
+                file.write(dumps(sort2return(data, key=lambda x: x['name'])))
 
         except Exception as e:
             self.throw_error(0, str(e))
@@ -342,7 +344,7 @@ class DataEditor(PrinterApp):
         self.vars.unsaved = False
 
     def ask_about_changes(self) -> bool:
-        return self.vars.unsaved not askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
+        return self.vars.unsaved and not askokcancel(title='Niezapisane zmiany', message='Czy chcesz kontynuować?')
 
     # overridden #
     def pre(self) -> None:
