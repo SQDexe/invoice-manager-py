@@ -30,7 +30,7 @@ def roman2int(number: str, /) -> int:
 def point2tuple(point: str, /) -> tuple[int, ...]:
     return tuple(roman2int(n) for n in point.split('.'))
 
-def sort2return[T](iterable: Iterable[T], /, *, key: Callable[[Any], Any]=None, reverse: bool=False) -> list[T]:
+def sort2return[T](iterable: Iterable[T], /, *, key: Callable[[T], Any]=None, reverse: bool=False) -> list[T]:
     if isinstance(iterable, list):
         iterable.sort(key=key, reverse=reverse)
         return iterable
