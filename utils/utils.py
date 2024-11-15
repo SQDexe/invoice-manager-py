@@ -8,7 +8,6 @@ from utils.consts import BAD_CHARS
 from sys import version_info, executable
 from os.path import normpath, dirname
 from re import compile as recompile
-from functools import cache
 
 from tkinter import Tk, Menu
 from tkinter.ttk import Style, Frame
