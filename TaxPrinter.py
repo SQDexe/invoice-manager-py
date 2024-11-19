@@ -6,7 +6,7 @@ from docx.text.run import Run
 from tkinter import Event
 
 from utils import PrinterApp, Function
-from utils.consts import BAD_CHARS, MIN_DATE, Slice
+from utils.consts import BAD_CHARS, MIN_DATE
 from utils.funcs import connect_dates, extract_dates, flatten, get_state, get_timespan_desc, pair_up, point2tuple, replace_mutiple, sort2return, str2date
 
 from os import getcwd
@@ -114,7 +114,7 @@ class TaxPrinter(PrinterApp):
 
         # for single point #
         if len(values) == 1:
-            project, point, _ = values[0]
+            project, point = values[0][:2]
             name.append(self.vars.patterns.single_name.sub('', unidecode(project).lower()))
             name.append(point.replace('.', ''))
 
@@ -130,7 +130,7 @@ class TaxPrinter(PrinterApp):
         dates: tuple[Optional[tuple[date, date]], ...] = tuple(
           extract_dates(day, pair_up(
             str2date(d)
-            for d in self.elem.tree_all.item(project_iid, 'values')[Slice.ALL_BUT_FIRST]
+            for d in self.elem.tree_all.item(project_iid, 'values')[1:]
             ))
           for *_, project_iid in values
           )
@@ -277,7 +277,7 @@ class TaxPrinter(PrinterApp):
 
             items: tuple[str, ...] = self.elem.tree_selected.get_children()
             for project, parent_iid in sort2return({
-              self.elem.tree_selected.item(iid, 'values')[Slice.EVEN]
+              self.elem.tree_selected.item(iid, 'values')[::2]
               for iid in items
               }, key=lambda x: x[0]):
 
@@ -297,7 +297,7 @@ class TaxPrinter(PrinterApp):
 
                 # get data for point, and write them #
                 collected_points: tuple[tuple[str, str], ...] = tuple(
-                  self.elem.tree_selected.item(iid, 'values')[Slice.ODD]
+                  self.elem.tree_selected.item(iid, 'values')[1::2]
                   for iid in items
                   if self.elem.tree_selected.set(iid, 'project') == project
                   )
