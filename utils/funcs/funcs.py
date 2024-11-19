@@ -1,12 +1,12 @@
 from typing import Any, Optional
 from collections.abc import Callable, Sequence, Iterable
-from utils.consts import ROMAN, Slice
+from utils.consts import ROMAN
 from datetime import date, datetime
 from re import compile as recompile, escape
 from functools import cache
 
 def str2date(day: str, /) -> date:
-    # date(*tuple(int(x) for x in day.split('.')[Slice.REVERSED]))
+    # date(*tuple(int(x) for x in day.split('.')[::-1]))
     return datetime.strptime(day, '%d.%m.%Y').date()
 
 def date2str(day: date, /) -> str:
@@ -61,7 +61,7 @@ def get_timespan_desc(beg: date, end: date, /):
 def pair_up[T](seq: Sequence[T], /) -> tuple[tuple[T, T], ...]:
     if not (isinstance(seq, list) or isinstance(seq, tuple)):
         seq = tuple(seq)
-    return tuple(zip(seq[Slice.EVEN], seq[Slice.ODD]))
+    return tuple(zip(seq[::2], seq[1::2]))
 
 def flatten[T](seq: Sequence[tuple[T, ...]], /) -> tuple[T, ...]:
     return sum(seq, ())
