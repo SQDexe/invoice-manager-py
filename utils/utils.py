@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Self
 from collections.abc import Callable, Hashable, ItemsView
 
 from abc import ABC, abstractmethod
@@ -36,6 +36,26 @@ class Namespace:
             other = {}
         self.__dict__.update(other | kwargs)
 
+# smaller version of Namespace #
+def Name(values: dict[Hashable, Any]=None, /, **kwargs: Any) -> Self:
+    if not isinstance(values, dict):
+        values = {}
+    values |= kwargs
+    
+    class __Name__:
+        __slots__: tuple[str, ...] = tuple(values.keys())
+        def __init__(self, other: dict[Hashable, Any], /) -> None:
+            for key, value in other.items():
+                setattr(self, key, value)
+    
+        def __getitem__(self, key: Hashable) -> Any:
+            return getattr(self, key)
+    
+        def __setitem__(self, key: Hashable, value: Any) -> None:
+            setattr(self, key, value)
+
+    return __Name__(values)
+
 class PrinterApp(ABC):
     # attributes declaration #
     __slots__: tuple[str, ...] = ('root', 'vars', 'elem', 'tips', 'grid', 'menus', 'binds')
@@ -47,12 +67,12 @@ class PrinterApp(ABC):
         # declearing variables, and elements #
         self.vars: Namespace = Namespace(
           title = None,
-          size = Namespace(
+          size = Name(
             min = (None, None),
             max = (None, None)
             ),
-          ver = Namespace(
-            py = '{}.{}.{}'.format(version_info.major, version_info.minor, version_info.micro),
+          ver = Name(
+            py = f'{version_info.major}.{version_info.minor}.{version_info.micro}',
             tk = self.root.tk.call('info', 'patchlevel'),
             pyinst = '6.8.0'
             ),
@@ -88,7 +108,7 @@ class PrinterApp(ABC):
           )
         self.elem: Namespace = Namespace()
         self.tips: list[ToolTip] = []
-        self.grid: Namespace = Namespace(
+        self.grid: Namespace = Name(
           row = {'default': {'weight': 1, 'minsize': 40} },
           col = {'default': {'weight': 1, 'minsize': 50} }    
           )
