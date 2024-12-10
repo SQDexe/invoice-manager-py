@@ -351,10 +351,8 @@ class DataEditor(PrinterApp):
     def pre(self) -> None:
         # important #
         self.vars.title = 'Data Editor'
-        self.vars.size.update(
-          min = (400, 450),
-          max = (650, 650)
-          )
+        self.vars.size.min = (400, 450)
+        self.vars.size.max = (650, 650)
 
         # add, and set variables #
         self.vars.update(
