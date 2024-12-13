@@ -40,10 +40,10 @@ class Namespace:
 def Name(values: dict[Hashable, Any]=None, /, **kwargs: Any) -> Self:
     if not isinstance(values, dict):
         values = {}
-    values |= kwargs
+    full: dict[Hashable, Any] = values | kwargs
     
     class __Name__:
-        __slots__: tuple[str, ...] = tuple(values.keys())
+        __slots__: tuple[str, ...] = tuple(full.keys())
         def __init__(self, other: dict[Hashable, Any], /) -> None:
             for key, value in other.items():
                 setattr(self, key, value)
@@ -54,7 +54,7 @@ def Name(values: dict[Hashable, Any]=None, /, **kwargs: Any) -> Self:
         def __setitem__(self, key: Hashable, value: Any) -> None:
             setattr(self, key, value)
 
-    return __Name__(values)
+    return __Name__(full)
 
 class PrinterApp(ABC):
     # attributes declaration #
