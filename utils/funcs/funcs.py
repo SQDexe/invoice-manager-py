@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Literal
 from collections.abc import Callable, Sequence, Iterable
 from utils.consts import ROMAN
 from datetime import date, datetime
@@ -36,7 +36,7 @@ def sort2return[T](iterable: Iterable[T], /, *, key: Callable[[T], Any]=None, re
         return iterable
     return sorted(iterable, key=key, reverse=reverse)
 
-def get_state(state: bool, /) -> str:
+def get_state(state: bool, /) -> Literal['disabled', 'normal']:
     return 'normal' if state else 'disabled'
 
 def extract_dates(day: date, dates: Sequence[tuple[date, date]], /) -> Optional[tuple[date, date]]:
