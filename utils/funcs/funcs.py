@@ -1,5 +1,5 @@
 from typing import Any, Optional, Literal
-from collections.abc import Callable, Sequence, Iterable
+from collections.abc import Callable, Sequence, Iterable, Iterator
 from utils.consts import ROMAN
 from datetime import date, datetime
 from re import compile as recompile, escape
@@ -58,10 +58,15 @@ def get_timespan_desc(beg: date, end: date, /):
         return f'{beg.day}-{end.day}_{beg.month}_{beg:%y}'
     return f'{beg.day}_{beg.month}_{beg:%y}'
 
-def pair_up[T](seq: Sequence[T], /) -> tuple[tuple[T, T], ...]:
+def pair_cross[T](seq: Sequence[T], /) -> Iterator[tuple[T, T], ...]:
     if not (isinstance(seq, list) or isinstance(seq, tuple)):
         seq = tuple(seq)
-    return tuple(zip(seq[::2], seq[1::2]))
+    return zip(seq, seq[1:])
+
+def pair_up[T](seq: Sequence[T], /) -> Iterator[tuple[T, T], ...]:
+    if not (isinstance(seq, list) or isinstance(seq, tuple)):
+        seq = tuple(seq)
+    return zip(seq[::2], seq[1::2])
 
 def flatten[T](seq: Sequence[tuple[T, ...]], /) -> tuple[T, ...]:
     return sum(seq, ())
