@@ -4,7 +4,7 @@ from tkinter import Event
 
 from utils import PrinterApp, Function
 from utils.consts import MIN_DATE
-from utils.funcs import flatten, pair_up, point2tuple, sort2return
+from utils.funcs import flatten, pair_cross, pair_up, point2tuple, sort2return
 
 from os import getcwd
 from os.path import isfile, join
@@ -134,7 +134,7 @@ class DataEditor(PrinterApp):
             return
 
         # check if name not taken #
-        if name in tuple(self.elem.tree_points.item(child, 'text') for child in self.elem.tree_points.get_children()):
+        if name in (self.elem.tree_points.item(child, 'text') for child in self.elem.tree_points.get_children()):
             self.throw_error(502)
             return
 
@@ -165,7 +165,7 @@ class DataEditor(PrinterApp):
             iid = self.elem.tree_points.parent(iid)
 
         # check if name not taken # 
-        if name in tuple(self.elem.tree_points.item(child, 'text') for child in self.elem.tree_points.get_children(iid)):
+        if name in (self.elem.tree_points.item(child, 'text') for child in self.elem.tree_points.get_children(iid)):
             self.throw_error(502)
             return
 
@@ -200,7 +200,7 @@ class DataEditor(PrinterApp):
         parent_iid: str = '' if is_catalogue else self.elem.tree_points.parent(iid)
 
         # check if name not taken #
-        if name in tuple(self.elem.tree_points.item(child, 'text') for child in self.elem.tree_points.get_children(parent_iid)):
+        if name in (self.elem.tree_points.item(child, 'text') for child in self.elem.tree_points.get_children(parent_iid)):
             self.throw_error(502)
             return
 
@@ -266,7 +266,7 @@ class DataEditor(PrinterApp):
             return
 
         # check for other dates #
-        index: str = 'end'
+        index: str
         if childs := self.elem.tree_dates.get_children():
             # check if date not taken #
             current_dates: tuple[tuple[date, date], ...] = tuple(
@@ -280,11 +280,11 @@ class DataEditor(PrinterApp):
             # get right index #
             if end < current_dates[0][0]:
                 index = '0'
-            elif current_dates[-1][0] < beg:
-                index = str(len(current_dates))
+            elif current_dates[-1][1] < beg:
+                index = 'end'
             else:
-                for i in range(1, len(current_dates) - 1):
-                    if current_dates[i - 1][1] < beg and end < current_dates[i][0]:
+                for i, ((_, ending), (start, _)) in enumerate(pair_cross(current_dates), 1):
+                    if ending < beg and end < start:
                         index = str(i)
 
         # insert in right postion #
