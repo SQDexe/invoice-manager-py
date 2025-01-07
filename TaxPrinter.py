@@ -1,4 +1,5 @@
 from typing import Any, Optional
+from collections.abc import Iterator
 from datetime import date
 from docx.styles.style import ParagraphStyle
 from docx.text.paragraph import Paragraph
@@ -127,7 +128,7 @@ class TaxPrinter(PrinterApp):
 
         # extract dates #
         day: date = str2date(self.vars.var.date.get())
-        dates: tuple[Optional[tuple[date, date]], ...] = tuple(
+        dates: Iterator[Optional[tuple[date, date]]] = (
           extract_dates(day, pair_up(
             str2date(d)
             for d in self.elem.tree_all.item(project_iid, 'values')[1:]
@@ -149,7 +150,7 @@ class TaxPrinter(PrinterApp):
     @check
     def add(self) -> None:
         # get all iids and leave out folders #
-        iids: tuple[tuple[str, str], ...] = tuple(
+        iids: Iterator[tuple[str, str]] = (
           (iid, self.elem.tree_all.parent(iid))
           for iid in self.elem.tree_all.selection()
           if not self.elem.tree_all.tag_has('catalogue', iid)
@@ -208,7 +209,7 @@ class TaxPrinter(PrinterApp):
             return
 
         # check whether already not selected #
-        if iid in tuple(self.elem.tree_selected.item(x, 'values')[3] for x in self.elem.tree_selected.get_children()):
+        if iid in (self.elem.tree_selected.item(x, 'values')[3] for x in self.elem.tree_selected.get_children()):
             return
 
         # add element to table #
@@ -222,7 +223,7 @@ class TaxPrinter(PrinterApp):
 
     @check
     def remove(self) -> None:
-        iids: list[str] = self.elem.tree_selected.selection()
+        iids: tuple[str, ...] = self.elem.tree_selected.selection()
 
         # check whether iids correct #
         if not iids:
@@ -283,7 +284,7 @@ class TaxPrinter(PrinterApp):
 
                 # perpare variables #
                 desc, *str_dates = self.elem.tree_all.item(parent_iid, 'values')
-                day, *dates = tuple(str2date(d) for d in (self.vars.var.date.get(), *str_dates))
+                day, *dates = (str2date(d) for d in (self.vars.var.date.get(), *str_dates))
                 time: tuple[date, date] = extract_dates(day, pair_up(dates))
 
                 # check whether time was found #
