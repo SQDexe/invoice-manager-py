@@ -1,4 +1,5 @@
 from typing import Any, Optional
+from collections.abc import Iterator
 from datetime import date
 from tkinter import Event
 
@@ -295,7 +296,7 @@ class DataEditor(PrinterApp):
 
         # update values #
         desc: str = self.elem.tree_points.item(parent_iid, 'values')[0]
-        new_dates: tuple[str, ...] = flatten(
+        new_dates: Iterator[str] = flatten(
           self.elem.tree_dates.item(child, 'values')
           for child in self.elem.tree_dates.get_children()
           )
