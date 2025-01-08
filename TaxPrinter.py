@@ -128,7 +128,8 @@ class TaxPrinter(PrinterApp):
 
         # extract dates #
         day: date = str2date(self.vars.var.date.get())
-        dates: Iterator[Optional[tuple[date, date]]] = (
+        # generator doesn't work Iterator[Optional[tuple[date, date]]] #
+        dates: tuple[Optional[tuple[date, date]], ...] = tuple(
           extract_dates(day, pair_up(
             str2date(d)
             for d in self.elem.tree_all.item(project_iid, 'values')[1:]
@@ -163,7 +164,7 @@ class TaxPrinter(PrinterApp):
 
         # check whether already not selected #
         clear_iids: tuple[str, ...] = tuple(iid for iid, _ in iids)
-        if any(iid in clear_iids for iid in tuple(
+        if any(iid in clear_iids for iid in (
           self.elem.tree_selected.item(child, 'values')[3]
           for child in self.elem.tree_selected.get_children()
           )):
@@ -272,7 +273,7 @@ class TaxPrinter(PrinterApp):
 
         # get projects, and prepare text #
         txt: str = ''
-        with StringIO('', newline='') as txt_file:
+        with StringIO('', newline=None) as txt_file:
             if beg := self.elem.txt_opening.get('1.0', 'end-1c').strip():
                 txt_file.write(beg + '<br><br>')
 
