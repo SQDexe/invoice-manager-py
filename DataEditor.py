@@ -271,7 +271,7 @@ class DataEditor(PrinterApp):
         if childs := self.elem.tree_dates.get_children():
             # check if date not taken #
             current_dates: tuple[tuple[date, date], ...] = tuple(
-              tuple(self.str2date(d) for d in self.elem.tree_dates.item(iid, 'values'))
+              tuple(str2date(d) for d in self.elem.tree_dates.item(iid, 'values'))
               for iid in childs
               )
             if not all(end < start or ending < beg for start, ending in current_dates):
