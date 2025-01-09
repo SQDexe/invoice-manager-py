@@ -86,7 +86,7 @@ class TaxPrinter(PrinterApp):
 
     def toggle(self) -> None:
         states: tuple[str, str] = self.vars.var.cash.get(), self.vars.var.addons.get()
-        cash_state, addons_state = tuple(get_state(x) for x in states)
+        cash_state, addons_state = (get_state(x) for x in states)
         self.elem.entry_cash.config(state=cash_state)
         self.elem.radbtn_auto.config(state=cash_state)
         self.elem.radbtn_all.config(state=cash_state)
@@ -272,7 +272,7 @@ class TaxPrinter(PrinterApp):
                 return
 
         # get projects, and prepare text #
-        txt: str = ''
+        txt: str
         with StringIO('', newline=None) as txt_file:
             if beg := self.elem.txt_opening.get('1.0', 'end-1c').strip():
                 txt_file.write(beg + '<br><br>')
