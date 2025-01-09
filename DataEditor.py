@@ -146,9 +146,7 @@ class DataEditor(PrinterApp):
 
     @safecheck
     def add_item(self) -> None:
-        iid: str = self.elem.tree_points.focus()
-        name: str = self.vars.var.name.get().strip()
-        index: str = 'end'
+        iid, name, index = self.elem.tree_points.focus(), self.vars.var.name.get().strip(), 'end'
 
         # check whether element is focused #
         if not iid:
@@ -162,8 +160,7 @@ class DataEditor(PrinterApp):
 
         # get catalogue #
         if not self.elem.tree_points.tag_has('catalogue', iid):
-            index = self.elem.tree_points.index(iid)
-            iid = self.elem.tree_points.parent(iid)
+            index, iid = self.elem.tree_points.index(iid), self.elem.tree_points.parent(iid)
 
         # check if name not taken # 
         if name in (self.elem.tree_points.item(child, 'text') for child in self.elem.tree_points.get_children(iid)):
@@ -182,8 +179,7 @@ class DataEditor(PrinterApp):
 
     @safecheck
     def change_item(self) -> None:
-        iid: str = self.elem.tree_points.focus()
-        name: str = self.vars.var.name.get().strip()
+        iid, name = self.elem.tree_points.focus(), self.vars.var.name.get().strip()
 
         # check whether element is focused #
         if not iid:
@@ -261,7 +257,7 @@ class DataEditor(PrinterApp):
             parent_iid = self.elem.tree_points.parent(parent_iid)
 
         # check if range is correct #
-        beg, end = tuple(self.str2date(x) for x in (self.vars.var.date_beg.get(), self.vars.var.date_end.get()))
+        beg, end = (self.str2date(x) for x in (self.vars.var.date_beg.get(), self.vars.var.date_end.get()))
         if end <= beg:
             self.throw_error(503)
             return
@@ -309,7 +305,7 @@ class DataEditor(PrinterApp):
         for project in self.elem.tree_points.get_children():
             name: str = self.elem.tree_points.item(project, 'text')
             desc, *dates = self.elem.tree_points.item(project, 'values')
-            dict_dates: list[dict[str, str]] = [{'from': beg, 'to': end} for beg, end in pair_up(dates)]
+            dict_dates: tuple[dict[str, str], ...] = tuple({'from': beg, 'to': end} for beg, end in pair_up(dates))
             points: list[dict[str, Any]] = [
               {'point': self.elem.tree_points.item(item, 'text'), 'text': self.elem.tree_points.item(item, 'values')[0]}
               for item in self.elem.tree_points.get_children(project)
