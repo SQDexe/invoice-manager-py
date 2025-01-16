@@ -139,8 +139,8 @@ class TaxPrinter(PrinterApp):
 
         # find edge dates #
         if all(dates):
-            starts, ends = zip(*dates)
-            start, end = max(starts), min(ends)
+            start_list, end_list = zip(*dates)
+            start, end = max(start_list), min(end_list)
             if start <= end:
                 name.append(get_timespan_desc(start, end))
 
