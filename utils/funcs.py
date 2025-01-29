@@ -1,9 +1,12 @@
 from typing import Any, Optional, Literal
 from collections.abc import Callable, Sequence, Iterable, Iterator
+
 from utils.consts import ROMAN
+
 from datetime import date, datetime
 from re import compile as recompile, escape
 from functools import cache
+
 
 def str2date(day: str, /) -> date:
     # date(*tuple(int(x) for x in day.split('.')[::-1]))
