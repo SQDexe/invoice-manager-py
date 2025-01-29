@@ -1,19 +1,19 @@
 from typing import Any, Self
 from collections.abc import Callable, Hashable, ItemsView
 
-from abc import ABC, abstractmethod
-
 from utils.consts import BAD_CHARS
 
+from abc import ABC, abstractmethod
 from sys import version_info, executable
 from os.path import normpath, dirname
 from re import compile as recompile
-
 from tkinter import Tk, Menu
 from tkinter.ttk import Style, Frame
 from tkinter.messagebox import showwarning, showerror, showinfo
 from tkinter.filedialog import askopenfilename
+
 from tktooltip import ToolTip
+
 
 type Function = Callable[..., Any]
 
