@@ -16,16 +16,16 @@ from io import StringIO
 from json import loads
 from re import compile as recompile
 from functools import wraps
-
-from unidecode import unidecode
-from docx import Document
-from docx.shared import Pt
-
 from tkinter import StringVar as StrVar, BooleanVar as BoolVar, Text
 from tkinter.ttk import Entry, Button, Treeview, Scrollbar, Checkbutton, Radiobutton
 from tkinter.messagebox import showinfo, askokcancel
 from tkinter.filedialog import askdirectory
+
+from unidecode import unidecode
+from docx import Document
+from docx.shared import Pt
 from tkcalendar import DateEntry
+
 
 class TaxPrinter(PrinterApp):
     # attributes redeclaration #
