@@ -1,4 +1,5 @@
 from typing import Final
+
 # from enum import EnumType
 from datetime import date
 
