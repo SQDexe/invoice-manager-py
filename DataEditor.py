@@ -12,11 +12,12 @@ from os.path import isfile, join
 from json import loads, dumps
 from re import compile as recompile
 from functools import wraps
-
 from tkinter import StringVar as StrVar, Text
 from tkinter.ttk import Entry, Button, Treeview, Scrollbar, Label
 from tkinter.messagebox import showinfo, askokcancel
+
 from tkcalendar import DateEntry
+
 
 class DataEditor(PrinterApp):
     # attributes redeclaration #
