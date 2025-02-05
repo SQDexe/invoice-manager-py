@@ -125,7 +125,7 @@ class PrinterApp(ABC):
         self.root.resizable(True, True)
         self.root.geometry('{}x{}+{}+{}'.format(
           width,
-          height,
+          height + 25,
           (self.root.winfo_screenwidth() - width) // 2,
           (self.root.winfo_screenheight() - height) // 2
           ))
