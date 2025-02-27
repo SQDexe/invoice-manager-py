@@ -18,7 +18,5 @@ pyinstaller {file} ^
   --hidden-import babel.numbers
 ```
 
-Made with:
-- Python 3.12.4
-- TKinter 8.6.13
-- PyInstaller 6.8.0
+Most prominent dependencies:
+- Python 3.12.4 ( TKinter 8.6.13, PyInstaller 6.8.0 )
