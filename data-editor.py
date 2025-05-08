@@ -264,7 +264,7 @@ class DataEditor(PrinterApp):
             return
 
         # check for other dates #
-        index: str
+        index: str = '0'
         if childs := self.elem.tree_dates.get_children():
             # check if date not taken #
             current_dates: tuple[tuple[date, date], ...] = tuple(
@@ -275,14 +275,15 @@ class DataEditor(PrinterApp):
                 self.throw_error(504)
                 return
 
+            (first_beg, _), (_, last_end) = current_dates[0], current_dates[-1]
             # get right index #
-            if end < current_dates[0][0]:
-                index = '0'
-            elif current_dates[-1][1] < beg:
+            if end < first_beg:
+                ...
+            elif last_end < beg:
                 index = 'end'
             else:
-                for i, ((_, ending), (start, _)) in enumerate(pair_cross(current_dates), 1):
-                    if ending < beg and end < start:
+                for i, ((_, prev_end), (next_beg, _)) in enumerate(pair_cross(current_dates), 1):
+                    if prev_end < beg and end < next_beg:
                         index = str(i)
 
         # insert in right postion #
