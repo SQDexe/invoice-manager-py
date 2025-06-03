@@ -151,7 +151,7 @@ class TaxPrinter(PrinterApp):
     @check
     def add(self) -> None:
         # get all iids and leave out folders #
-        iids: Iterator[tuple[str, str]] = (
+        iids: tuple[tuple[str, str], ...] = tuple(
           (iid, self.elem.tree_all.parent(iid))
           for iid in self.elem.tree_all.selection()
           if not self.elem.tree_all.tag_has('catalogue', iid)
@@ -163,7 +163,7 @@ class TaxPrinter(PrinterApp):
             return
 
         # check whether already not selected #
-        clear_iids: tuple[str, ...] = tuple(iid for iid, _ in iids)
+        clear_iids: frozenset[str] = frozenset(iid for iid, _ in iids)
         if any(iid in clear_iids for iid in (
           self.elem.tree_selected.item(child, 'values')[3]
           for child in self.elem.tree_selected.get_children()
