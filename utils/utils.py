@@ -56,7 +56,7 @@ def Name(values: dict[Hashable, Any]=None, /, **kwargs: Any) -> Self:
 
     return __Name__(full)
 
-class PrinterApp(ABC):
+class App(ABC):
     # attributes declaration #
     __slots__: tuple[str, ...] = ('root', 'vars', 'elem', 'tips', 'grid', 'menus', 'binds')
     
@@ -272,3 +272,4 @@ class PrinterApp(ABC):
           '{} - niedozwolone znaki nazwy pliku'
           ).format(' '.join(BAD_CHARS))
         showinfo(title='Formatowanie', message=msg)
+
