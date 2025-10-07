@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from datetime import date
 from tkinter import Event
 
-from utils import PrinterApp, Function
+from utils import App, Function
 from utils.consts import MIN_DATE
 from utils.funcs import flatten, pair_cross, pair_up, point2tuple, sort2return
 
@@ -19,7 +19,7 @@ from tkinter.messagebox import showinfo, askokcancel
 from tkcalendar import DateEntry
 
 
-class DataEditor(PrinterApp):
+class DataEditor(App):
     # attributes redeclaration #
     __slots__: tuple[()] = ()
     
@@ -522,3 +522,4 @@ class DataEditor(PrinterApp):
 
 if __name__ == '__main__':
     DataEditor()
+
