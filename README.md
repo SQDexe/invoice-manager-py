@@ -1,6 +1,10 @@
-## Tax Printer and Data Editor
+## Invoice Manager
 
-Programmes written to automate the process of signing documents by qucik generation of docx files based on a simple template. Written for use in Polish language, can be adjusted with just a few tweaks
+Programmes written to automate the process of signing invoice documents by qucik generation of DOCX files based on a simple template.
+Written for use in Polish language, can be adjusted with just a few tweaks.
+
+- Data Editor - manages data used for prinitng invoices
+- Invoice Printer - used for prinitng selected data into a DOCX
 
 Compiled using PyInstaller:
 ```
