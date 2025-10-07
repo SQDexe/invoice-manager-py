@@ -381,7 +381,7 @@ class TaxPrinter(App):
     # overridden #
     def pre(self) -> None:
         # important #
-        self.vars.title = 'Tax Printer'
+        self.vars.title = 'Invoice Printer'
         self.vars.size.min = (400, 450)
         self.vars.size.max = (650, 650)
 
@@ -610,4 +610,5 @@ class TaxPrinter(App):
 
 if __name__ == '__main__':
     TaxPrinter()
+
 
