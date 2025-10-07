@@ -6,7 +6,7 @@ from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 from tkinter import Event
 
-from utils import PrinterApp, Function
+from utils import App, Function
 from utils.consts import BAD_CHARS, MIN_DATE
 from utils.funcs import connect_dates, extract_dates, flatten, get_state, get_timespan_desc, pair_up, point2tuple, replace_mutiple, sort2return, str2date
 
@@ -27,7 +27,7 @@ from docx.shared import Pt
 from tkcalendar import DateEntry
 
 
-class TaxPrinter(PrinterApp):
+class TaxPrinter(App):
     # attributes redeclaration #
     __slots__: tuple[()] = ()
 
@@ -610,3 +610,4 @@ class TaxPrinter(PrinterApp):
 
 if __name__ == '__main__':
     TaxPrinter()
+
