@@ -71,6 +71,7 @@ class App(ABC):
             min = (None, None),
             max = (None, None)
             ),
+          icon = None,
           ver = Name(
             py = f'{version_info.major}.{version_info.minor}.{version_info.micro}',
             tk = self.root.tk.call('info', 'patchlevel'),
@@ -130,7 +131,11 @@ class App(ABC):
           (self.root.winfo_screenheight() - height) // 2
           ))
         self.root.title(self.vars.title)
-        self.root.iconbitmap(executable)
+
+        try:
+          self.root.iconbitmap(executable)
+        except Exception:
+          self.root.iconbitmap(self.vars.icon)
 
         # protocols #
         self.root.protocol('WM_DELETE_WINDOW', self.close)
