@@ -384,6 +384,7 @@ class TaxPrinter(App):
         self.vars.title = 'Invoice Printer'
         self.vars.size.min = (400, 450)
         self.vars.size.max = (650, 650)
+        self.vars.icon = 'ip.ico'
 
         # add, and set variables #
         self.vars.update(

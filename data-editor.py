@@ -5,7 +5,7 @@ from tkinter import Event
 
 from utils import App, Function
 from utils.consts import MIN_DATE
-from utils.funcs import flatten, pair_cross, pair_up, point2tuple, sort2return
+from utils.funcs import flatten, pair_cross, pair_up, point2tuple, sort2return, str2date
 
 from os import getcwd
 from os.path import isfile, join
@@ -258,7 +258,7 @@ class DataEditor(App):
             parent_iid = self.elem.tree_points.parent(parent_iid)
 
         # check if range is correct #
-        beg, end = (self.str2date(x) for x in (self.vars.var.date_beg.get(), self.vars.var.date_end.get()))
+        beg, end = (str2date(x) for x in (self.vars.var.date_beg.get(), self.vars.var.date_end.get()))
         if end <= beg:
             self.throw_error(503)
             return
@@ -352,6 +352,7 @@ class DataEditor(App):
         self.vars.title = 'Data Editor'
         self.vars.size.min = (400, 450)
         self.vars.size.max = (650, 650)
+        self.vars.icon = 'de.ico'
 
         # add, and set variables #
         self.vars.update(

@@ -3,14 +3,14 @@ from collections.abc import Callable, Sequence, Iterable, Iterator
 
 from utils.consts import ROMAN
 
-from datetime import date, datetime
+from datetime import date
 from re import compile as recompile, escape
 from functools import cache
 
 
 def str2date(day: str, /) -> date:
     # date(*tuple(int(x) for x in day.split('.')[::-1]))
-    return datetime.strptime(day, '%d.%m.%Y').date()
+    return date.strptime(day, '%d.%m.%Y')
 
 def date2str(day: date, /) -> str:
     return day.strftime('%d.%m.%Y')
@@ -61,12 +61,12 @@ def get_timespan_desc(beg: date, end: date, /):
         return f'{beg.day}-{end.day}_{beg.month}_{beg:%y}'
     return f'{beg.day}_{beg.month}_{beg:%y}'
 
-def pair_cross[T](seq: Sequence[T], /) -> Iterator[tuple[T, T], ...]:
+def pair_cross[T](seq: Sequence[T], /) -> Iterator[tuple[T, T]]:
     if not (isinstance(seq, list) or isinstance(seq, tuple)):
         seq = tuple(seq)
     return zip(seq, seq[1:])
 
-def pair_up[T](seq: Sequence[T], /) -> Iterator[tuple[T, T], ...]:
+def pair_up[T](seq: Sequence[T], /) -> Iterator[tuple[T, T]]:
     if not (isinstance(seq, list) or isinstance(seq, tuple)):
         seq = tuple(seq)
     return zip(seq[::2], seq[1::2])

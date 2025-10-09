@@ -1,12 +1,14 @@
 ## Invoice Manager
 
-Programmes written to automate the process of signing invoice documents by qucik generation of DOCX files based on a simple template.
-Written for use in Polish language, can be adjusted with just a few tweaks.
+Programmes written to automate the process of signing invoice documents by quick generation of DOCX files based on a simple template.  
+Written for use in the Polish language, it can be adjusted with just a few tweaks.
 
-- Data Editor - manages data used for prinitng invoices
-- Invoice Printer - used for prinitng selected data into a DOCX
+- Data Editor - manages data used for printing invoices
+- Invoice Printer - used for printing selected data into a DOCX
 
-Compiled using PyInstaller:
+Managed using [UV](https://docs.astral.sh/uv/)
+
+Compiled using PyInstaller 6.8.0:
 ```
 pyinstaller {file} ^
   --name "{name}" ^
@@ -21,6 +23,3 @@ pyinstaller {file} ^
   --specpath .\\{dump_folder} ^
   --hidden-import babel.numbers
 ```
-
-Most prominent dependencies:
-- Python 3.12.4 ( TKinter 8.6.13, PyInstaller 6.8.0 )
