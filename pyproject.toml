@@ -2,11 +2,18 @@
 name = "invoice-manager"
 version = "2.0.0"
 description = "Project to automate printing of documents at workplace "
+authors = [
+    {name = "SQD.exe"}
+    ]
 readme = "README.md"
+license = "Unlicense"
 requires-python = ">=3.14"
 dependencies = [
     "python-docx>=1.2.0",
     "tkcalendar>=1.6.1",
     "tkinter-tooltip>=3.1.2",
     "unidecode>=1.4.0",
-    ]
+]
+
+[project.urls]
+Repository = "https://github.com/SQDexe/invoice-manager-py"
