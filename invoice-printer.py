@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from collections.abc import Iterator
+# from collections.abc import Iterator
 from datetime import date
 from docx.styles.style import ParagraphStyle
 from docx.text.paragraph import Paragraph
@@ -611,5 +611,6 @@ class TaxPrinter(App):
 
 if __name__ == '__main__':
     TaxPrinter()
+
 
 
